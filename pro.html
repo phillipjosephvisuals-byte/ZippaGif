@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZippaGif Pro | Client-Side Video & Document Engine</title>
+  
+  <!-- Fonts & Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+
+  <style>
+    :root {
+      --indigo-primary: #4338ca;
+      --indigo-accent: #6366f1;
+      --indigo-light: #e0e7ff;
+      --indigo-bg-tint: #f5f7ff;
+      --slate-50: #f8fafc;
+      --slate-200: #e2e8f0;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+      --gold-accent: #d97706;
+      --gold-bg: #fef3c7;
+      
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-shadow: 0 20px 40px -15px rgba(67, 56, 202, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.9) inset;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #f5f7ff 35%, #ffffff 100%);
+      color: var(--slate-900);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--indigo-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-pill {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      background: var(--gold-bg);
+      color: var(--gold-accent);
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+    .offline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .offline-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 48px 24px 32px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--gold-accent);
+      background: var(--gold-bg);
+      border: 1px solid #fde68a;
+      backdrop-filter: blur(8px);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--slate-900);
+      margin-bottom: 12px;
+    }
+    .hero p { font-size: 1.1rem; color: var(--slate-500); }
+
+    .tool-wrapper {
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto 64px;
+      padding: 0 16px;
+    }
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow);
+      padding: 32px;
+      position: relative;
+    }
+
+    .tool-tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(226, 232, 240, 0.5);
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: transparent;
+      color: var(--slate-500);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--indigo-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      background: rgba(245, 247, 255, 0.4);
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .dropzone:hover {
+      border-color: var(--indigo-accent);
+      background: rgba(224, 231, 255, 0.3);
+    }
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .dropzone-label { font-weight: 600; font-size: 0.95rem; color: var(--slate-700); }
+    .dropzone-sub { font-size: 0.8rem; color: var(--slate-500); margin-top: 4px; }
+
+    #clipList { 
+      display: flex; 
+      flex-direction: column-reverse; 
+      gap: 16px; 
+      margin-bottom: 20px; 
+    }
+    .clip-card {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: grab;
+      position: relative;
+    }
+    .clip-card.dragging { opacity: 0.5; border: 2px solid var(--indigo-accent); }
+    .clip-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--slate-700);
+      cursor: grab;
+    }
+    .filmstrip-container {
+      position: relative;
+      height: 48px;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: default;
+    }
+    .filmstrip-canvas { width: 100%; height: 100%; display: block; }
+    .trimmer-overlay {
+      position: absolute;
+      top: 0; bottom: 0; left: 0; width: 100%;
+      background: rgba(99, 102, 241, 0.3);
+      cursor: move;
+      pointer-events: auto;
+    }
+    
+    .handle {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 14px;
+      background: var(--indigo-primary);
+      border-radius: 4px;
+      cursor: ew-resize;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      pointer-events: auto;
+    }
+    .handle-left { left: -7px; }
+    .handle-right { right: -7px; }
+    .handle::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px; height: 12px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 1px;
+    }
+
+    .meter-panel {
+      background: rgba(241, 245, 249, 0.6);
+      border: 1px solid var(--slate-200);
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .indicator-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #16a34a;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    }
+    .indicator-dot.exceeded {
+      background: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    }
+    .meter-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .meter-bar-fill {
+      height: 100%;
+      background: var(--indigo-accent);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 16px;
+    }
+    .field-row .field { flex: 1; margin-bottom: 0; }
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+    select, input[type="range"] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    select {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--slate-200);
+      padding: 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--slate-700);
+    }
+    .slider-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 4px;
+    }
+
+    .badge-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .badge-neutral { background: var(--slate-200); color: var(--slate-700); }
+    .badge-brand { background: var(--indigo-light); color: var(--indigo-primary); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--indigo-primary) 0%, #3730a3 100%);
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.95; transform: translateY(-1px); }
+    .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--slate-200);
+      color: var(--slate-700);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .status-text {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      text-align: center;
+    }
+    .preview-box {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--slate-200);
+      text-align: center;
+      display: none;
+    }
+    .preview-box img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 12px auto;
+      display: block;
+      border: 1px solid var(--slate-200);
+    }
+
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--slate-200);
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 24px 32px;
+      font-size: 0.85rem;
+      color: var(--slate-500);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { color: var(--slate-500); text-decoration: none; }
+    .footer-links a:hover { color: var(--indigo-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="brand">
+      ZippaGif
+      <span class="brand-pill">Pro Edition</span>
+    </div>
+    <div class="nav-actions">
+      <div id="offlineBadge" class="offline-badge">
+        <span class="offline-dot"></span>
+        <span id="offlineStatusText">Caching Offline...</span>
+      </div>
+      <a href="index.html" class="btn-outline" style="text-decoration: none;">Return to Standard</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-tagline">
+      ★ Professional Unlimited License Active
+    </div>
+    <h1>Professional File Conversion.<br>Zero Cloud Uploads.</h1>
+    <p>Render high-resolution GIFs up to 1080p HD, sequence up to 10 clips, and batch-convert up to 500 documents & images.</p>
+  </header>
+
+  <!-- Core Tool Section -->
+  <main class="tool-wrapper">
+    <div class="glass-card">
+      <div class="tool-tabs">
+        <button class="tab-btn active" id="tabVideoBtn" onclick="switchTab('video')">Video to GIF Suite</button>
+        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document & Batch Image Suite</button>
+      </div>
+
+      <!-- VIEW 1: VIDEO TO GIF -->
+      <div id="viewVideo">
+        <div id="clipList"></div>
+
+        <div class="dropzone" id="videoDropzone">
+          <input type="file" id="videoInput" accept="video/*">
+          <div class="dropzone-label">Drop video file here, or browse</div>
+          <div class="dropzone-sub">Add up to 10 clips (MP4, WebM, MOV) • Pro Uncapped</div>
+        </div>
+
+        <div id="meterPanel" class="meter-panel" style="display:none;">
+          <div id="statusIndicator" class="indicator-dot"></div>
+          <div style="flex-grow: 1;">
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
+              <span>Total GIF Duration Allocation</span>
+              <span id="frameBudgetLabel">0.0 sec / 120.0 sec</span>
+            </div>
+            <div class="meter-bar">
+              <div id="meterFill" class="meter-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row" id="proVideoControls" style="display:none; margin-top: 20px;">
+          <div class="field">
+            <label for="gifResSelect">GIF Resolution Quality</label>
+            <select id="gifResSelect">
+              <option value="480">480p Standard (Fast Encode)</option>
+              <option value="720" selected>720p HD (Balanced)</option>
+              <option value="1080">1080p Full HD (Pro Max Quality)</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="slider-meta">
+              <label for="durationGatingSlider">Target Max GIF Duration</label>
+              <span id="durationGatingVal">120.0 sec</span>
+            </div>
+            <input type="range" id="durationGatingSlider" min="1" max="120" step="1" value="120">
+          </div>
+        </div>
+
+        <button id="convertBtn" class="btn-primary" disabled>Generate Pro GIF</button>
+        <div id="status" class="status-text"></div>
+
+        <div id="previewContainer" class="preview-box">
+          <img id="gifOutput" alt="Generated GIF">
+          <a id="downloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="zippagif_pro_output.gif">Download GIF</a>
+        </div>
+      </div>
+
+      <!-- VIEW 2: DOCUMENT & BATCH IMAGE SUITE -->
+      <div id="viewDoc" style="display: none;">
+        <div class="dropzone">
+          <input type="file" id="docInput" accept="application/pdf, image/*, .tiff, .tif" multiple>
+          <div class="dropzone-label">Drop files here, or browse (Up to 500 files)</div>
+          <div class="dropzone-sub">Supports batch .jpg, .png, .webp, multi-page .tiff, and .pdf</div>
+        </div>
+
+        <div id="docPanel" style="display: none;">
+          <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700); margin-bottom:14px;">Selected: -</div>
+          
+          <div class="field-row">
+            <div class="field">
+              <label for="formatSelect">Target Format</label>
+              <select id="formatSelect">
+                <option value="image/webp">WebP Images</option>
+                <option value="image/jpeg">JPEG Images</option>
+                <option value="image/png">PNG Images</option>
+                <option value="application/pdf">PDF Document</option>
+              </select>
+            </div>
+            <div class="badge-group" style="margin-bottom: 16px;">
+              <span class="badge badge-neutral">Original Total: <span id="origSize">0 KB</span></span>
+              <span class="badge badge-brand">Est. Total: <span id="estSize">0 KB</span></span>
+            </div>
+          </div>
+
+          <div class="field" id="webpModeContainer">
+            <label for="webpModeSelect">WebP Compression Mode</label>
+            <select id="webpModeSelect">
+              <option value="lossy">Lossy (Maximum file size reduction)</option>
+              <option value="lossless">Lossless (Preserve exact pixel data)</option>
+            </select>
+          </div>
+
+          <div class="field" id="qualityField">
+            <div class="slider-meta">
+              <span>Quality Compression</span>
+              <span id="qualityVal">85%</span>
+            </div>
+            <input type="range" id="qualitySlider" min="10" max="100" value="85">
+          </div>
+
+          <div class="field">
+            <div class="slider-meta">
+              <span>Resolution / Export Scale</span>
+              <span id="scaleVal">100%</span>
+            </div>
+            <input type="range" id="scaleSlider" min="20" max="300" value="100">
+          </div>
+
+          <button id="convertDocBtn" class="btn-primary" style="margin-top: 12px;">Convert All to Batch ZIP</button>
+        </div>
+
+        <div id="docStatus" class="status-text"></div>
+
+        <div id="docPreviewContainer" class="preview-box">
+          <img id="docOutputImg" alt="Converted Result">
+          <a id="docDownloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="converted">Download Result</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div>© 2026 ZippaGif Pro. Fully client-side software.</div>
+    <div class="footer-links">
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#terms">Terms of Service</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </footer>
+
+  <canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+  <script>
+    /* Service Worker */
+    const offlineStatusText = document.getElementById('offlineStatusText');
+    const offlineBadge = document.getElementById('offlineBadge');
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const swCode = `
+            const CACHE_NAME = 'zippagif-pro-v1';
+            const ASSETS = [
+              'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+              'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+              'https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js'
+            ];
+
+            self.addEventListener('install', (e) => {
+              e.waitUntil(
+                caches.open(CACHE_NAME).then((cache) => {
+                  return cache.addAll(ASSETS).catch(() => {});
+                }).then(() => self.skipWaiting())
+              );
+            });
+
+            self.addEventListener('activate', (e) => {
+              e.waitUntil(
+                caches.keys().then((keys) => {
+                  return Promise.all(
+                    keys.map((k) => {
+                      if (k !== CACHE_NAME) return caches.delete(k);
+                    })
+                  );
+                }).then(() => self.clients.claim())
+              );
+            });
+
+            self.addEventListener('fetch', (e) => {
+              e.respondWith(
+                caches.match(e.request).then((cached) => {
+                  if (cached) return cached;
+                  return fetch(e.request).then((resp) => {
+                    if (resp && resp.status === 200 && e.request.method === 'GET') {
+                      const clone = resp.clone();
+                      caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
+                    }
+                    return resp;
+                  }).catch(() => cached);
+                })
+              );
+            });
+          `;
+
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(swBlob);
+          await navigator.serviceWorker.register(swUrl);
+          
+          offlineStatusText.textContent = 'Offline Ready';
+          offlineBadge.style.background = '#ecfdf5';
+          offlineBadge.style.color = '#065f46';
+          offlineBadge.querySelector('.offline-dot').style.background = '#10b981';
+        } catch (err) {
+          offlineStatusText.textContent = 'Online Mode';
+        }
+      });
+    }
+
+    function switchTab(type) {
+      const tabVideoBtn = document.getElementById('tabVideoBtn');
+      const tabDocBtn = document.getElementById('tabDocBtn');
+      const viewVideo = document.getElementById('viewVideo');
+      const viewDoc = document.getElementById('viewDoc');
+
+      if (type === 'video') {
+        tabVideoBtn.classList.add('active');
+        tabDocBtn.classList.remove('active');
+        viewVideo.style.display = 'block';
+        viewDoc.style.display = 'none';
+      } else {
+        tabDocBtn.classList.add('active');
+        tabVideoBtn.classList.remove('active');
+        viewDoc.style.display = 'block';
+        viewVideo.style.display = 'none';
+      }
+    }
+
+    /* Section 1: Video to GIF Engine */
+    let MAX_GIF_DURATION = 120.0;
+    const TARGET_FPS = 12;
+
+    const videoInput = document.getElementById('videoInput');
+    const videoDropzone = document.getElementById('videoDropzone');
+    const clipList = document.getElementById('clipList');
+    const meterPanel = document.getElementById('meterPanel');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const frameBudgetLabel = document.getElementById('frameBudgetLabel');
+    const meterFill = document.getElementById('meterFill');
+    const convertBtn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+    const hiddenCanvas = document.getElementById('hiddenCanvas');
+    const previewContainer = document.getElementById('previewContainer');
+    const gifOutput = document.getElementById('gifOutput');
+    const downloadLink = document.getElementById('downloadLink');
+    
+    const proVideoControls = document.getElementById('proVideoControls');
+    const gifResSelect = document.getElementById('gifResSelect');
+    const durationGatingSlider = document.getElementById('durationGatingSlider');
+    const durationGatingVal = document.getElementById('durationGatingVal');
+
+    let clips = [];
+
+    videoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (clips.length >= 10) {
+        status.textContent = 'Maximum of 10 clips reached for Pro tier.';
+        videoInput.value = '';
+        return;
+      }
+
+      status.textContent = `Loading clip ${clips.length + 1}...`;
+      
+      try {
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.src = url;
+        video.preload = 'auto';
+        video.muted = true;
+
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = resolve;
+          video.onerror = reject;
+          setTimeout(() => reject(new Error("Video load timeout")), 10000);
+        });
+
+        const clip = {
+          id: 'clip-' + Date.now(),
+          file, url, video,
+          duration: video.duration,
+          startPct: 0, 
+          endPct: Math.min(1, 5 / video.duration) 
+        };
+
+        clips.push(clip);
+        renderClipCard(clip);
+        updateUiState();
+        videoInput.value = ''; 
+      } catch (err) {
+        status.textContent = 'Error loading video: ' + err.message;
+      }
+    });
+    
+    durationGatingSlider.addEventListener('input', () => {
+      MAX_GIF_DURATION = parseFloat(durationGatingSlider.value);
+      durationGatingVal.textContent = MAX_GIF_DURATION.toFixed(1) + ' sec';
+      updateBudgetMeter();
+    });
+
+    function updateUiState() {
+      if (clips.length > 0) {
+        meterPanel.style.display = 'flex';
+        proVideoControls.style.display = 'flex';
+        convertBtn.disabled = false;
+        status.textContent = `${clips.length} clip(s) loaded. Arrange and trim.`;
+        
+        if (clips.length >= 10) {
+          videoDropzone.style.opacity = '0.5';
+          videoDropzone.querySelector('.dropzone-label').textContent = 'Clip slots full (Max 10)';
+        } else {
+          videoDropzone.style.opacity = '1';
+          videoDropzone.querySelector('.dropzone-label').textContent = 'Drop next video file, or browse';
+        }
+      } else {
+        meterPanel.style.display = 'none';
+        proVideoControls.style.display = 'none';
+        convertBtn.disabled = true;
+      }
+      updateBudgetMeter();
+    }
+
+    function renderClipCard(clip) {
+      const card = document.createElement('div');
+      card.className = 'clip-card';
+      card.draggable = true;
+      card.dataset.id = clip.id;
+
+      card.innerHTML = `
+        <div class="clip-header">
+          <span>⋮⋮ Clip ${clips.length}: ${clip.file.name}</span>
+          <span class="clip-time-info">0.0 sec - ${(clip.endPct * clip.duration).toFixed(1)} sec</span>
+        </div>
+        <div class="filmstrip-container">
+          <canvas class="filmstrip-canvas"></canvas>
+          <div class="trimmer-overlay">
+            <div class="handle handle-left"></div>
+            <div class="handle handle-right"></div>
+          </div>
+        </div>
+      `;
+
+      clipList.appendChild(card);
+      setupDragAndDropReordering(card);
+      setupOptimizedTrimmer(card, clip);
+      generateFilmstrip(card, clip);
+    }
+
+    async function generateFilmstrip(card, clip) {
+      const canvas = card.querySelector('.filmstrip-canvas');
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width || 600;
+      canvas.height = rect.height || 48;
+
+      const thumbCount = 8;
+      const thumbWidth = canvas.width / thumbCount;
+      const step = clip.duration / thumbCount;
+
+      for (let i = 0; i < thumbCount; i++) {
+        clip.video.currentTime = i * step;
+        await new Promise(r => clip.video.onseeked = r);
+        ctx.drawImage(clip.video, i * thumbWidth, 0, thumbWidth, canvas.height);
+      }
+    }
+
+    function setupOptimizedTrimmer(card, clip) {
+      const container = card.querySelector('.filmstrip-container');
+      const overlay = card.querySelector('.trimmer-overlay');
+      const handleL = card.querySelector('.handle-left');
+      const handleR = card.querySelector('.handle-right');
+      const timeInfo = card.querySelector('.clip-time-info');
+
+      let activeInteraction = null;
+      let startX = 0;
+      let startStartPct = 0;
+      let startEndPct = 1;
+
+      const onMouseDown = (e, type) => {
+        e.preventDefault(); 
+        e.stopPropagation();
+
+        activeInteraction = type;
+        startX = e.clientX;
+        startStartPct = clip.startPct;
+        startEndPct = clip.endPct;
+        overlay.style.transition = 'none';
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      };
+
+      handleL.addEventListener('mousedown', (e) => onMouseDown(e, 'left'));
+      handleR.addEventListener('mousedown', (e) => onMouseDown(e, 'right'));
+      overlay.addEventListener('mousedown', (e) => {
+        if (e.target === handleL || e.target === handleR) return;
+        onMouseDown(e, 'move');
+      });
+
+      function onMouseMove(e) {
+        if (!activeInteraction) return;
+
+        const rect = container.getBoundingClientRect();
+        const deltaPct = (e.clientX - startX) / rect.width;
+        const minWindowPct = 0.05;
+
+        if (activeInteraction === 'left') {
+          let newStart = startStartPct + deltaPct;
+          newStart = Math.max(0, Math.min(newStart, clip.endPct - minWindowPct));
+          clip.startPct = newStart;
+        } else if (activeInteraction === 'right') {
+          let newEnd = startEndPct + deltaPct;
+          newEnd = Math.min(1, Math.max(newEnd, clip.startPct + minWindowPct));
+          clip.endPct = newEnd;
+        } else if (activeInteraction === 'move') {
+          const windowWidth = startEndPct - startStartPct;
+          let newStart = startStartPct + deltaPct;
+          let newEnd = startEndPct + deltaPct;
+
+          if (newStart < 0) { newStart = 0; newEnd = windowWidth; }
+          else if (newEnd > 1) { newEnd = 1; newStart = 1 - windowWidth; }
+          clip.startPct = newStart;
+          clip.endPct = newEnd;
+        }
+
+        updateTrimmerUi();
+        updateBudgetMeter();
+      }
+
+      function onMouseUp() {
+        if (!activeInteraction) return;
+        activeInteraction = null;
+        overlay.style.transition = '';
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+
+      function updateTrimmerUi() {
+        const leftCoord = clip.startPct * 100;
+        const widthCoord = (clip.endPct - clip.startPct) * 100;
+        overlay.style.left = leftCoord + '%';
+        overlay.style.width = widthCoord + '%';
+        
+        const startTime = (clip.startPct * clip.duration).toFixed(1);
+        const endTime = (clip.endPct * clip.duration).toFixed(1);
+        timeInfo.textContent = `${startTime} sec - ${endTime} sec`;
+      }
+
+      updateTrimmerUi();
+    }
+
+    function setupDragAndDropReordering(card) {
+      const header = card.querySelector('.clip-header');
+      header.addEventListener('mousedown', () => { card.draggable = true; });
+
+      card.addEventListener('dragstart', (e) => {
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', card.dataset.id);
+        e.dataTransfer.setDragImage(card, 20, 20);
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        reorderClipsArrayInState();
+      });
+
+      clipList.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const draggingCard = document.querySelector('.clip-card.dragging');
+        if (!draggingCard) return;
+
+        const siblings = [...clipList.querySelectorAll('.clip-card:not(.dragging)')];
+        let nextSibling = siblings.find(sibling => {
+          return e.clientY <= sibling.getBoundingClientRect().top + sibling.offsetHeight / 2;
+        });
+
+        if (nextSibling) {
+          clipList.insertBefore(draggingCard, nextSibling);
+        } else {
+          clipList.appendChild(draggingCard);
+        }
+      });
+    }
+
+    function reorderClipsArrayInState() {
+      const cardElements = [...clipList.querySelectorAll('.clip-card')];
+      clips = cardElements.map(el => clips.find(c => c.id === el.dataset.id));
+      status.textContent = 'Clip order updated.';
+    }
+
+    function updateBudgetMeter() {
+      if (clips.length === 0) return;
+
+      let totalSelectedSeconds = 0;
+      clips.forEach(clip => {
+        totalSelectedSeconds += (clip.endPct - clip.startPct) * clip.duration;
+      });
+
+      const percentageOfBudget = Math.min(100, Math.round((totalSelectedSeconds / MAX_GIF_DURATION) * 100));
+
+      frameBudgetLabel.textContent = `${totalSelectedSeconds.toFixed(1)} sec / ${MAX_GIF_DURATION.toFixed(1)} sec total`;
+      meterFill.style.width = `${percentageOfBudget}%`;
+
+      if (totalSelectedSeconds <= MAX_GIF_DURATION) {
+        statusIndicator.classList.remove('exceeded');
+        meterFill.style.backgroundColor = 'var(--indigo-accent)';
+        convertBtn.disabled = false;
+        if (!convertBtn.disabled && !convertBtn.textContent.includes('Generating')) {
+          status.textContent = 'Ready to convert.';
+        }
+      } else {
+        statusIndicator.classList.add('exceeded');
+        meterFill.style.backgroundColor = '#dc2626';
+        convertBtn.disabled = true;
+        status.textContent = `Total selection (${totalSelectedSeconds.toFixed(1)} sec) exceeds limit of ${MAX_GIF_DURATION.toFixed(1)} sec. Trim clips.`;
+      }
+    }
+
+    convertBtn.addEventListener('click', async () => {
+      convertBtn.disabled = true;
+      const targetHeight = parseInt(gifResSelect.value, 10);
+      convertBtn.textContent = `Generating ${targetHeight}p GIF...`;
+      status.textContent = 'Processing frames in worker thread...';
+      previewContainer.style.display = 'none';
+
+      const firstVideo = clips[0].video;
+      const aspectRatio = firstVideo.videoWidth / firstVideo.videoHeight;
+      const targetWidth = Math.round(targetHeight * aspectRatio);
+
+      hiddenCanvas.width = targetWidth;
+      hiddenCanvas.height = targetHeight;
+      const ctx = hiddenCanvas.getContext('2d');
+
+      const workerBlob = new Blob([`importScripts('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');`], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(workerBlob);
+
+      const gif = new GIF({
+        workers: 4,
+        quality: 8,
+        width: targetWidth,
+        height: targetHeight,
+        workerScript: workerUrl
+      });
+
+      const stepTime = 1 / TARGET_FPS;
+
+      for (let i = 0; i < clips.length; i++) {
+        const clip = clips[i];
+        const startTimeReal = clip.startPct * clip.duration;
+        const endTimeReal = clip.endPct * clip.duration;
+        
+        status.textContent = `Extracting frames from Clip ${i+1} of ${clips.length}...`;
+
+        let currentTime = startTimeReal;
+        while (currentTime < endTimeReal && currentTime < clip.duration) {
+          clip.video.currentTime = currentTime;
+          
+          await new Promise((resolve) => {
+            const onSeeked = () => {
+              clip.video.removeEventListener('seeked', onSeeked);
+              resolve();
+            };
+            clip.video.addEventListener('seeked', onSeeked);
+            setTimeout(onSeeked, 500); 
+          });
+
+          ctx.drawImage(clip.video, 0, 0, targetWidth, targetHeight);
+          gif.addFrame(ctx, { copy: true, delay: Math.round(1000 / TARGET_FPS) });
+          currentTime += stepTime;
+        }
+      }
+
+      status.textContent = 'Encoding Pro GIF with NeuQuant quantization...';
+      
+      gif.on('finished', (blob) => {
+        const gifUrl = URL.createObjectURL(blob);
+        gifOutput.src = gifUrl;
+        downloadLink.href = gifUrl;
+        previewContainer.style.display = 'block';
+        status.textContent = `Pro Conversion complete! (${clips.length} clips merged, ${targetHeight}p HD, ${TARGET_FPS}fps).`;
+        convertBtn.disabled = false;
+        convertBtn.textContent = 'Generate Pro GIF';
+        URL.revokeObjectURL(workerUrl);
+        updateBudgetMeter();
+      });
+
+      gif.render();
+    });
+
+    /* Section 2: Document & Batch Image Suite (Pro 500-File Batch Queue) */
+    const docInput = document.getElementById('docInput');
+    const docPanel = document.getElementById('docPanel');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const formatSelect = document.getElementById('formatSelect');
+    const webpModeContainer = document.getElementById('webpModeContainer');
+    const webpModeSelect = document.getElementById('webpModeSelect');
+    const qualityField = document.getElementById('qualityField');
+    const qualitySlider = document.getElementById('qualitySlider');
+    const scaleSlider = document.getElementById('scaleSlider');
+    const qualityVal = document.getElementById('qualityVal');
+    const scaleVal = document.getElementById('scaleVal');
+    const origSize = document.getElementById('origSize');
+    const estSize = document.getElementById('estSize');
+    const convertDocBtn = document.getElementById('convertDocBtn');
+    const docStatus = document.getElementById('docStatus');
+    const docPreviewContainer = document.getElementById('docPreviewContainer');
+    const docOutputImg = document.getElementById('docOutputImg');
+    const docDownloadLink = document.getElementById('docDownloadLink');
+
+    let batchQueue = [];
+
+    docInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files).slice(0, 500);
+      if (!files.length) return;
+
+      batchQueue = [];
+      let totalBytes = 0;
+      docStatus.textContent = `Queuing ${files.length} file(s)...`;
+      docPanel.style.display = 'block';
+      docPreviewContainer.style.display = 'none';
+
+      for (let f = 0; f < files.length; f++) {
+        const file = files[f];
+        totalBytes += file.size;
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        try {
+          if (file.type === 'application/pdf') {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            for (let p = 1; p <= pdf.numPages; p++) {
+              const page = await pdf.getPage(p);
+              batchQueue.push({
+                name: `${file.name.replace(/\.[^/.]+$/, "")}_page_${p}`,
+                type: 'pdf-page',
+                data: page
+              });
+            }
+          } else if (ext === 'tiff' || ext === 'tif') {
+            const arrayBuffer = await file.arrayBuffer();
+            const ifds = UTIF.decode(arrayBuffer);
+            for (let i = 0; i < ifds.length; i++) {
+              UTIF.decodeImage(arrayBuffer, ifds[i]);
+              const rgba = UTIF.toRGBA8(ifds[i]);
+              const canvas = document.createElement('canvas');
+              canvas.width = ifds[i].width;
+              canvas.height = ifds[i].height;
+              const ctx = canvas.getContext('2d');
+              const imgData = ctx.createImageData(canvas.width, canvas.height);
+              imgData.data.set(rgba);
+              ctx.putImageData(imgData, 0, 0);
+
+              batchQueue.push({
+                name: `${file.name.replace(/\.[^/.]+$/, "")}_frame_${i + 1}`,
+                type: 'canvas',
+                data: canvas
+              });
+            }
+          } else {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            await new Promise(r => img.onload = r);
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            batchQueue.push({
+              name: file.name.replace(/\.[^/.]+$/, ""),
+              type: 'canvas',
+              data: canvas
+            });
+          }
+        } catch (err) {
+          console.error("Error parsing file in batch:", file.name, err);
+        }
+      }
+
+      selectedFileName.textContent = `Batch Ready: ${files.length} file(s) loaded (${batchQueue.length} total render frames).`;
+      origSize.textContent = formatBytes(totalBytes);
+      convertDocBtn.textContent = batchQueue.length > 1 ? `Convert All ${batchQueue.length} Frames (ZIP)` : `Convert Image`;
+      docStatus.textContent = 'Batch loaded. Set resolution and compression below.';
+
+      updateFormatControls();
+      estimateOutputSize();
+    });
+
+    function updateFormatControls() {
+      const isWebP = formatSelect.value === 'image/webp';
+      webpModeContainer.style.display = isWebP ? 'block' : 'none';
+
+      if (isWebP && webpModeSelect.value === 'lossless') {
+        qualityField.style.display = 'none';
+      } else if (formatSelect.value === 'image/png') {
+        qualityField.style.display = 'none';
+      } else {
+        qualityField.style.display = 'block';
+      }
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async function renderBatchItemToCanvas(item, exportScale) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { alpha: true });
+
+      if (item.type === 'pdf-page') {
+        const SUPERSAMPLE_RATIO = 2.0;
+        const totalScale = exportScale * SUPERSAMPLE_RATIO;
+        const viewport = item.data.getViewport({ scale: totalScale });
+
+        const supersampledCanvas = document.createElement('canvas');
+        supersampledCanvas.width = viewport.width;
+        supersampledCanvas.height = viewport.height;
+        const sCtx = supersampledCanvas.getContext('2d');
+
+        await item.data.render({ canvasContext: sCtx, viewport }).promise;
+
+        canvas.width = Math.round(viewport.width / SUPERSAMPLE_RATIO);
+        canvas.height = Math.round(viewport.height / SUPERSAMPLE_RATIO);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(supersampledCanvas, 0, 0, canvas.width, canvas.height);
+      } else {
+        canvas.width = Math.round(item.data.width * exportScale);
+        canvas.height = Math.round(item.data.height * exportScale);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(item.data, 0, 0, canvas.width, canvas.height);
+      }
+
+      return canvas;
+    }
+
+    async function estimateOutputSize() {
+      qualityVal.textContent = `${qualitySlider.value}%`;
+      scaleVal.textContent = `${scaleSlider.value}%`;
+
+      if (!batchQueue.length) return;
+
+      const scale = parseFloat(scaleSlider.value) / 100;
+      const targetFormat = formatSelect.value;
+      const isWebPLossless = targetFormat === 'image/webp' && webpModeSelect.value === 'lossless';
+      const quality = isWebPLossless ? 1.0 : parseFloat(qualitySlider.value) / 100;
+
+      const sampleCanvas = await renderBatchItemToCanvas(batchQueue[0], scale);
+
+      if (targetFormat === 'application/pdf') {
+        const baseSize = sampleCanvas.width * sampleCanvas.height * 0.18 * quality * batchQueue.length;
+        estSize.textContent = formatBytes(baseSize);
+      } else {
+        sampleCanvas.toBlob((blob) => {
+          if (blob) {
+            estSize.textContent = formatBytes(blob.size * batchQueue.length);
+          }
+        }, targetFormat, quality);
+      }
+    }
+
+    qualitySlider.addEventListener('input', estimateOutputSize);
+    scaleSlider.addEventListener('input', estimateOutputSize);
+    formatSelect.addEventListener('change', () => {
+      updateFormatControls();
+      estimateOutputSize();
+    });
+    webpModeSelect.addEventListener('change', () => {
+      updateFormatControls();
+      estimateOutputSize();
+    });
+
+    convertDocBtn.addEventListener('click', async () => {
+      if (!batchQueue.length) return;
+      convertDocBtn.disabled = true;
+      docStatus.textContent = 'Processing multi-file batch...';
+      docPreviewContainer.style.display = 'none';
+
+      const scale = parseFloat(scaleSlider.value) / 100;
+      const targetFormat = formatSelect.value;
+      const isWebPLossless = targetFormat === 'image/webp' && webpModeSelect.value === 'lossless';
+      const quality = isWebPLossless ? 1.0 : parseFloat(qualitySlider.value) / 100;
+      const ext = targetFormat === 'application/pdf' ? 'pdf' : targetFormat.split('/')[1];
+
+      if (targetFormat === 'application/pdf') {
+        const { jsPDF } = window.jspdf;
+        let pdfDocOut = null;
+
+        for (let i = 0; i < batchQueue.length; i++) {
+          docStatus.textContent = `Adding item ${i + 1} of ${batchQueue.length} to PDF...`;
+          const canvas = await renderBatchItemToCanvas(batchQueue[i], scale);
+          const imgData = canvas.toDataURL('image/jpeg', quality);
+          const orientation = canvas.width > canvas.height ? 'l' : 'p';
+
+          if (i === 0) {
+            pdfDocOut = new jsPDF(orientation, 'px', [canvas.width, canvas.height]);
+            pdfDocOut.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+          } else {
+            pdfDocOut.addPage([canvas.width, canvas.height], orientation);
+            pdfDocOut.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+          }
+        }
+
+        const pdfBlob = pdfDocOut.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        docOutputImg.style.display = 'none';
+        docDownloadLink.href = pdfUrl;
+        docDownloadLink.download = 'zippagif_pro_batch_combined.pdf';
+        docDownloadLink.textContent = 'Download Combined PDF';
+        docPreviewContainer.style.display = 'block';
+        docStatus.textContent = `All ${batchQueue.length} items merged into PDF!`;
+      } else if (batchQueue.length === 1) {
+        const canvas = await renderBatchItemToCanvas(batchQueue[0], scale);
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          docOutputImg.src = url;
+          docOutputImg.style.display = 'block';
+          docDownloadLink.href = url;
+          docDownloadLink.download = `${batchQueue[0].name}.${ext}`;
+          docDownloadLink.textContent = `Download ${ext.toUpperCase()}`;
+          docPreviewContainer.style.display = 'block';
+          docStatus.textContent = 'Conversion complete.';
+        }, targetFormat, quality);
+      } else {
+        const zip = new JSZip();
+        for (let i = 0; i < batchQueue.length; i++) {
+          docStatus.textContent = `Encoding frame ${i + 1} of ${batchQueue.length}...`;
+          const canvas = await renderBatchItemToCanvas(batchQueue[i], scale);
+          const blob = await new Promise(r => canvas.toBlob(r, targetFormat, quality));
+          zip.file(`${batchQueue[i].name}.${ext}`, blob);
+        }
+
+        docStatus.textContent = `Zipping ${batchQueue.length} optimized files...`;
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const zipUrl = URL.createObjectURL(zipBlob);
+        docOutputImg.style.display = 'none';
+        docDownloadLink.href = zipUrl;
+        docDownloadLink.download = `zippagif_pro_batch_${ext}.zip`;
+        docDownloadLink.textContent = `Download All ${batchQueue.length} Files (ZIP)`;
+        docPreviewContainer.style.display = 'block';
+        docStatus.textContent = `Batch conversion finished: ${batchQueue.length} files bundled into ZIP.`;
+      }
+
+      convertDocBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
