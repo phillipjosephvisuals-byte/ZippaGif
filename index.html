@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZippaGif | Client-Side Video & Document Engine</title>
   
-  <!-- Fonts & Libraries -->
+  <!-- Fonts & Core Base Libraries -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
-  <!-- Optional Lemon Squeezy Overlay JS -->
   <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
@@ -29,6 +28,7 @@
       --indigo-bg-tint: #f5f7ff;
       --slate-50: #f8fafc;
       --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
       --slate-500: #64748b;
       --slate-700: #334155;
       --slate-900: #0f172a;
@@ -214,6 +214,20 @@
     .dropzone-label { font-weight: 600; font-size: 0.95rem; color: var(--slate-700); }
     .dropzone-sub { font-size: 0.8rem; color: var(--slate-500); margin-top: 4px; }
 
+    .doc-guidance-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(224, 231, 255, 0.45);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: var(--slate-700);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
     #clipList { 
       display: flex; 
       flex-direction: column; 
@@ -358,6 +372,21 @@
     }
     .btn-primary:hover:not(:disabled) { opacity: 0.95; transform: translateY(-1px); }
     .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover:not(:disabled) { opacity: 0.95; transform: translateY(-1px); }
+
     .btn-outline {
       background: rgba(255, 255, 255, 0.8);
       border: 1px solid var(--slate-200);
@@ -397,8 +426,8 @@
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(6px);
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -406,7 +435,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease;
-      padding: 16px;
+      padding: 20px;
     }
     .modal-backdrop.active {
       opacity: 1;
@@ -434,6 +463,84 @@
     }
     .modal-error { color: #dc2626; font-size: 0.8rem; font-weight: 600; margin-bottom: 12px; display: none; }
     .modal-actions { display: flex; gap: 8px; }
+
+    /* Word DOCX Interactive Preview Modal */
+    .docx-modal-card {
+      background: #f8fafc;
+      border-radius: 16px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+    }
+    .docx-modal-header {
+      background: #ffffff;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .docx-banner {
+      background: #eff6ff;
+      border-bottom: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 10px 24px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .docx-preview-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 16px;
+      background: #cbd5e1;
+      display: flex;
+      justify-content: center;
+    }
+    /* Standard A4 Paper Width Layout */
+    .docx-page-container {
+      width: 100%;
+      max-width: 794px; /* Standard 96 DPI A4 width */
+      min-height: 1000px;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      padding: 48px;
+      border-radius: 4px;
+      column-gap: 28px;
+    }
+    /* Strategy 2: Graceful Multi-Column Flow Protection */
+    .docx-page-container [style*="column-count"],
+    .docx-page-container .docx-wrapper {
+      column-gap: 28px !important;
+      word-wrap: break-word;
+    }
+    .docx-fallback-box {
+      border: 1px dashed #6366f1;
+      background: #f5f7ff;
+      padding: 12px;
+      margin: 12px 0;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.82rem;
+      border-radius: 6px;
+    }
+    .docx-modal-footer {
+      background: #ffffff;
+      padding: 16px 24px;
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .docx-footer-actions { display: flex; gap: 10px; }
 
     /* Pricing Section */
     .pricing-section {
@@ -537,10 +644,10 @@
   <!-- Hero -->
   <header class="hero">
     <div class="hero-tagline" id="heroTagline">
-      🔒 100% Client-Side Engine • Max 480p Auto-Scale
+      🔒 100% Client-Side Engine • Zero Cloud Uploads
     </div>
     <h1>Professional File Conversion.<br>Zero Cloud Uploads.</h1>
-    <p id="heroSubtitle">Convert video sequences to lightweight GIFs or batch-process documents locally.</p>
+    <p id="heroSubtitle">Convert video sequences to lightweight GIFs or batch-process documents and Word (.docx) files locally.</p>
   </header>
 
   <!-- Core Tool Section -->
@@ -597,10 +704,16 @@
 
       <!-- VIEW 2: DOCUMENT & BATCH IMAGE SUITE -->
       <div id="viewDoc" style="display: none;">
+        
+        <div class="doc-guidance-pill">
+          <span>ℹ️</span>
+          <span><strong>Format Notice:</strong> Best for reports, resumes, contracts, and standard documents. Complex multi-layer flyers or proprietary SmartArt can also be printed via the Browser Print Engine.</span>
+        </div>
+
         <div class="dropzone">
-          <input type="file" id="docInput" accept="application/pdf, image/*, .tiff, .tif" multiple>
+          <input type="file" id="docInput" accept=".pdf, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*, .tiff, .tif" multiple>
           <div class="dropzone-label" id="docDropLabel">Drop files here, or browse (Up to 50 files)</div>
-          <div class="dropzone-sub">Supports batch .jpg, .png, .webp, multi-page .tiff, and .pdf</div>
+          <div class="dropzone-sub">Supports Word (.docx), .pdf, batch .jpg, .png, .webp, and multi-page .tiff</div>
         </div>
 
         <div id="docPanel" style="display: none;">
@@ -643,14 +756,14 @@
           <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 2px;">Essential quick conversions</p>
           <div class="price-value">$0 <span>/ free forever</span></div>
           <ul class="feature-list">
+            <li>Word (.docx) to PDF with Dual Engines</li>
             <li>100-Frame Budget (~10 sec @ 10 FPS)</li>
             <li>5 to 15 FPS Custom Selector</li>
-            <li>Single Clip Converter</li>
-            <li>Auto-Scales to 480p Longest Side</li>
+            <li>Single Clip Video Converter</li>
             <li>Up to 50 Files Document Queue</li>
           </ul>
         </div>
-        <button class="btn-outline" style="width: 100%;" id="starterPlanBtn" disabled>Current Active Plan</button>
+        <button class="btn-outline" style="width: 100%;" disabled>Current Active Plan</button>
       </div>
 
       <div class="price-card featured">
@@ -667,18 +780,49 @@
             <li>500-File Batch Document Queue</li>
           </ul>
         </div>
-        <!-- Replace href with your actual Lemon Squeezy checkout link -->
         <a href="https://yourstore.lemonsqueezy.com/buy/YOUR-PRODUCT-ID" class="lemonsqueezy-button btn-primary" id="buyProBtn">Get Pro Access</a>
       </div>
     </div>
   </section>
+
+  <!-- Strategy 1: Interactive Word (.docx) Preview & Confirmation Modal -->
+  <div class="modal-backdrop" id="docxPreviewModal">
+    <div class="docx-modal-card">
+      <div class="docx-modal-header">
+        <div>
+          <h3 id="docxModalTitle" style="font-size: 1.1rem; font-weight: 700; color: var(--slate-900);">Document Preview</h3>
+          <span style="font-size: 0.75rem; color: var(--slate-500);">Rendered via client-side Document Object Model parser</span>
+        </div>
+        <button class="btn-outline" onclick="closeDocxModal()">✕ Close</button>
+      </div>
+      
+      <div class="docx-banner">
+        <span>⚠️</span>
+        <span>Preview rendered locally in-browser. Please inspect column alignment and page breaks before exporting.</span>
+      </div>
+
+      <div class="docx-preview-viewport">
+        <div class="docx-page-container" id="docxRenderBody"></div>
+      </div>
+
+      <div class="docx-modal-footer">
+        <span id="docxExportStatus" style="font-size: 0.85rem; font-weight: 600; color: var(--slate-500);">Ready to export.</span>
+        <div class="docx-footer-actions">
+          <button class="btn-outline" onclick="closeDocxModal()">Cancel</button>
+          <!-- Strategy 3: Dual Export Engines -->
+          <button class="btn-secondary" id="docxNativePrintBtn" onclick="exportDocxNativePrint()">Print / Save via Browser Engine</button>
+          <button class="btn-primary" id="docxStandardPdfBtn" style="width: auto;" onclick="exportDocxStandardPdf()">Export to PDF (Standard)</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal for License Key Entry -->
   <div class="modal-backdrop" id="licenseModal">
     <div class="modal-card">
       <h3>Activate ZippaGif Pro</h3>
       <p>Enter the license key received from your Lemon Squeezy confirmation email.</p>
-      <input type="text" id="licenseInput" class="modal-input" placeholder="ZIPPA-XXXX-XXXX-XXXX" autocomplete="off" autocorrect="off">
+      <input type="text" id="licenseInput" class="modal-input" placeholder="ZIPPA-XXXX-XXXX-XXXX" autocomplete="off">
       <div id="licenseError" class="modal-error">Invalid license key format. Please check and re-try.</div>
       <div class="modal-actions">
         <button class="btn-primary" onclick="handleKeyActivation()">Activate License</button>
@@ -688,20 +832,20 @@
   </div>
 
   <footer>
-  <div>© 2026 ZippaGif. Fully client-side software.</div>
-  <div class="footer-links">
-    <a href="privacy.html">Privacy Policy</a>
-    <a href="terms.html">Terms of Service</a>
-    <a href="licenses.html">Open Source</a>
-    <a href="mailto:support@zippagif.com">Contact</a>
-  </div>
-</footer>
+    <div>© 2026 ZippaGif. Fully client-side software.</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="licenses.html">Open Source</a>
+      <a href="mailto:support@zippagif.com">Contact</a>
+    </div>
+  </footer>
 
   <canvas id="hiddenCanvas" style="display:none;"></canvas>
 
   <script>
     /* =========================================================
-       APP STATE & CONFIGURATION
+       APP STATE & LICENSE
        ========================================================= */
     const AppConfig = {
       isPro: false,
@@ -712,32 +856,23 @@
       maxDimension: 480
     };
 
-    /* =========================================================
-       LEMON SQUEEZY / CLIENT-SIDE LICENSE VALIDATION
-       ========================================================= */
     const LICENSE_STORAGE_KEY = 'zippagif_pro_license';
 
-    // Fast client-side validator. Accepts standard Lemon Squeezy UUIDs or custom formatted keys
     function validateLicenseKeyString(key) {
       if (!key) return false;
       const cleaned = key.trim().toUpperCase();
-      // Accepts ZIPPA-XXXX-XXXX or Lemon Squeezy standard UUID structure
       const isCustomFormat = cleaned.startsWith('ZIPPA-') && cleaned.length >= 12;
       const isUuid = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i.test(cleaned);
       return isCustomFormat || isUuid || cleaned.length >= 10;
     }
 
     function initLicense() {
-      // 1. Check URL parameters for instant 1-click activation from purchase redirect
       const urlParams = new URLSearchParams(window.location.search);
       const urlKey = urlParams.get('license_key') || urlParams.get('key');
-      
       if (urlKey && validateLicenseKeyString(urlKey)) {
         localStorage.setItem(LICENSE_STORAGE_KEY, urlKey);
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-
-      // 2. Read stored key
       const savedKey = localStorage.getItem(LICENSE_STORAGE_KEY);
       if (savedKey && validateLicenseKeyString(savedKey)) {
         activateProMode();
@@ -747,22 +882,18 @@
     function activateProMode() {
       AppConfig.isPro = true;
       document.body.classList.add('is-pro');
-
-      // Update UI Header & Badges
       document.getElementById('brandPill').textContent = 'Pro Edition';
       document.getElementById('heroTagline').textContent = '★ Professional License Active • Multi-Clip Sequencer';
       document.getElementById('heroSubtitle').textContent = 'Sequence up to 10 video clips into a single merged GIF with frame rates up to 24 FPS.';
       document.getElementById('licenseBtn').textContent = 'Pro Active (License)';
-      document.getElementById('licenseBtn').onclick = () => alert('Pro license is currently active on this browser.');
+      document.getElementById('licenseBtn').onclick = () => alert('Pro license is active on this browser.');
 
-      // Update Form Controls & Constraints
       const fpsSlider = document.getElementById('fpsSlider');
       fpsSlider.max = AppConfig.maxFps;
       document.getElementById('fpsMaxLabel').textContent = `${AppConfig.maxFps} FPS (Ultra Smooth)`;
       document.getElementById('dropzoneSub').textContent = 'Add up to 10 clips to sequence (MP4, WebM, MOV) • Pro Uncapped';
       document.getElementById('docDropLabel').textContent = `Drop files here, or browse (Up to ${AppConfig.maxDocBatch} files)`;
 
-      // Pricing Card Updates
       const buyProBtn = document.getElementById('buyProBtn');
       if (buyProBtn) {
         buyProBtn.textContent = 'Pro Active';
@@ -770,7 +901,6 @@
         buyProBtn.classList.add('btn-outline');
         buyProBtn.classList.remove('btn-primary');
       }
-
       updateBudgetMeter();
     }
 
@@ -778,17 +908,14 @@
       document.getElementById('licenseModal').classList.add('active');
       document.getElementById('licenseInput').focus();
     }
-
     function closeLicenseModal() {
       document.getElementById('licenseModal').classList.remove('active');
       document.getElementById('licenseError').style.display = 'none';
     }
-
     function handleKeyActivation() {
       const input = document.getElementById('licenseInput');
       const error = document.getElementById('licenseError');
       const val = input.value.trim();
-
       if (validateLicenseKeyString(val)) {
         localStorage.setItem(LICENSE_STORAGE_KEY, val);
         activateProMode();
@@ -800,7 +927,176 @@
     }
 
     /* =========================================================
-       SECTION 1: VIDEO TO GIF ENGINE (UNIFIED STARTER / PRO)
+       DYNAMIC LAZY LOADER FOR DOCX ENGINES
+       ========================================================= */
+    let docxLibrariesLoaded = false;
+    let docxLibrariesLoading = false;
+
+    async function ensureDocxLibrariesLoaded() {
+      if (docxLibrariesLoaded) return true;
+      if (docxLibrariesLoading) {
+        return new Promise(resolve => {
+          const check = setInterval(() => {
+            if (docxLibrariesLoaded) { clearInterval(check); resolve(true); }
+          }, 100);
+        });
+      }
+      docxLibrariesLoading = true;
+
+      const loadScript = (src) => new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+
+      try {
+        await Promise.all([
+          loadScript('https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js'),
+          loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js')
+        ]);
+        docxLibrariesLoaded = true;
+        docxLibrariesLoading = false;
+        return true;
+      } catch (err) {
+        docxLibrariesLoading = false;
+        throw new Error('Failed to load Word conversion libraries: ' + err.message);
+      }
+    }
+
+    /* =========================================================
+       STRATEGY 1, 2, & 3: WORD (.DOCX) PROCESSING & FALLBACKS
+       ========================================================= */
+    let activeDocxFile = null;
+    let activeDocxBuffer = null;
+
+    async function handleDocxUpload(file) {
+      activeDocxFile = file;
+      document.getElementById('docxModalTitle').textContent = `Preview: ${file.name}`;
+      document.getElementById('docxExportStatus').textContent = 'Loading Word parser engine...';
+      document.getElementById('docxPreviewModal').classList.add('active');
+      
+      const renderContainer = document.getElementById('docxRenderBody');
+      renderContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Parsing document structure...</div>';
+
+      try {
+        await ensureDocxLibrariesLoaded();
+        activeDocxBuffer = await file.arrayBuffer();
+
+        renderContainer.innerHTML = '';
+        await docx.renderAsync(activeDocxBuffer, renderContainer, null, {
+          className: 'docx',
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          useBase64URL: true,
+          renderChanges: false
+        });
+
+        // Strategy 2: Post-Render Check & Fallback for DrawingML / SmartArt / WordArt
+        applyDocxElementFallbacks(renderContainer);
+        document.getElementById('docxExportStatus').textContent = 'Inspection ready. Choose export engine below.';
+      } catch (err) {
+        console.error(err);
+        renderContainer.innerHTML = `<div style="color:#dc2626; padding:24px; text-align:center;">Failed to render Word preview: ${err.message}</div>`;
+        document.getElementById('docxExportStatus').textContent = 'Error parsing .docx file.';
+      }
+    }
+
+    function applyDocxElementFallbacks(container) {
+      // Find empty/unrendered DrawingML, SmartArt, or proprietary Canvas nodes
+      const potentialObjects = container.querySelectorAll('svg:empty, canvas:empty, [class*="drawing"], [class*="smartart"], [data-drawing]');
+      potentialObjects.forEach(node => {
+        if (node.offsetWidth === 0 || node.offsetHeight === 0 || node.children.length === 0) {
+          const fallback = document.createElement('div');
+          fallback.className = 'docx-fallback-box';
+          fallback.innerHTML = '[Embedded Office Object / SmartArt: View in original Word application]';
+          node.parentNode.replaceChild(fallback, node);
+        }
+      });
+    }
+
+    function closeDocxModal() {
+      document.getElementById('docxPreviewModal').classList.remove('active');
+      activeDocxFile = null;
+      activeDocxBuffer = null;
+    }
+
+    // Strategy 3 - Option 1: Standard PDF Export (html2pdf.js rasterizer)
+    async function exportDocxStandardPdf() {
+      const renderContainer = document.getElementById('docxRenderBody');
+      const status = document.getElementById('docxExportStatus');
+      const btn = document.getElementById('docxStandardPdfBtn');
+
+      btn.disabled = true;
+      status.textContent = 'Generating PDF with Standard Engine...';
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: activeDocxFile ? activeDocxFile.name.replace(/\.[^/.]+$/, "") + '.pdf' : 'document.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      };
+
+      try {
+        await html2pdf().set(opt).from(renderContainer).save();
+        status.textContent = 'Standard PDF exported successfully!';
+      } catch (err) {
+        status.textContent = 'Standard Export failed: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Strategy 3 - Option 2: Native Browser Print Engine (Vector Preserving)
+    function exportDocxNativePrint() {
+      const renderContainer = document.getElementById('docxRenderBody');
+      const printWindow = window.open('', '_blank', 'width=900,height=800');
+      
+      const docxHtml = renderContainer.innerHTML;
+      printWindow.document.open();
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${activeDocxFile ? activeDocxFile.name : 'Print Document'}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20mm; color: #000; }
+            .docx-wrapper { width: 100% !important; padding: 0 !important; }
+            .docx-fallback-box { border: 1px dashed #6366f1; padding: 12px; margin: 8px 0; text-align: center; color: #64748b; font-size: 0.8rem; border-radius: 6px; }
+            [style*="column-count"] { column-gap: 28px !important; }
+            @page { size: auto; margin: 15mm; }
+            @media print {
+              body { padding: 0; }
+              .page-break { page-break-after: always; }
+            }
+          </style>
+        </head>
+        <body>
+          <div>${docxHtml}</div>
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+              window.close();
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    /* =========================================================
+       SECTION 1: VIDEO TO GIF ENGINE
        ========================================================= */
     const videoInput = document.getElementById('videoInput');
     const videoDropzone = document.getElementById('videoDropzone');
@@ -1167,6 +1463,13 @@
       const files = Array.from(e.target.files).slice(0, AppConfig.maxDocBatch);
       if (!files.length) return;
 
+      // Check if single .docx is selected for interactive preview modal
+      if (files.length === 1 && files[0].name.toLowerCase().endsWith('.docx')) {
+        handleDocxUpload(files[0]);
+        docInput.value = '';
+        return;
+      }
+
       batchQueue = [];
       docStatus.textContent = `Queuing ${files.length} file(s)...`;
       docPanel.style.display = 'block';
@@ -1188,6 +1491,26 @@
                 data: page
               });
             }
+          } else if (ext === 'docx') {
+            // Bulk-docx handling in batch queue
+            await ensureDocxLibrariesLoaded();
+            const tempDiv = document.createElement('div');
+            tempDiv.style.width = '794px';
+            tempDiv.style.padding = '40px';
+            tempDiv.style.background = '#fff';
+            const arrayBuffer = await file.arrayBuffer();
+            await docx.renderAsync(arrayBuffer, tempDiv);
+            applyDocxElementFallbacks(tempDiv);
+            
+            document.body.appendChild(tempDiv);
+            const canvas = await html2canvas(tempDiv, { scale: 1.5 });
+            document.body.removeChild(tempDiv);
+
+            batchQueue.push({
+              name: file.name.replace(/\.[^/.]+$/, ""),
+              type: 'canvas',
+              data: canvas
+            });
           } else if (ext === 'tiff' || ext === 'tif') {
             const arrayBuffer = await file.arrayBuffer();
             const ifds = UTIF.decode(arrayBuffer);
@@ -1232,6 +1555,7 @@
       selectedFileName.textContent = `Batch Ready: ${files.length} file(s) loaded (${batchQueue.length} total render frames).`;
       convertDocBtn.textContent = batchQueue.length > 1 ? `Convert All ${batchQueue.length} Frames (ZIP)` : `Convert Image`;
       docStatus.textContent = 'Batch loaded. Choose target format below.';
+      docInput.value = '';
     });
 
     convertDocBtn.addEventListener('click', async () => {
@@ -1328,7 +1652,6 @@
       document.getElementById('viewDoc').style.display = type === 'doc' ? 'block' : 'none';
     }
 
-    // Initialize License on startup
     window.addEventListener('DOMContentLoaded', initLicense);
   </script>
 </body>
