@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZippaGif | Client-Side Video & Document Engine</title>
+  
+  <!-- Fonts & Core Base Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+
+  <style>
+    :root {
+      --indigo-primary: #4338ca;
+      --indigo-accent: #6366f1;
+      --indigo-light: #e0e7ff;
+      --indigo-bg-tint: #f5f7ff;
+      --slate-50: #f8fafc;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+      
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-shadow: 0 20px 40px -15px rgba(67, 56, 202, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.9) inset;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #f5f7ff 35%, #ffffff 100%);
+      color: var(--slate-900);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--indigo-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-pill {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      background: var(--indigo-light);
+      color: var(--indigo-primary);
+      border-radius: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+    .offline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .offline-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 48px 24px 32px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--indigo-primary);
+      background: rgba(224, 231, 255, 0.6);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(8px);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--slate-900);
+      margin-bottom: 12px;
+    }
+    .hero p { font-size: 1.1rem; color: var(--slate-500); }
+
+    .tool-wrapper {
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto 64px;
+      padding: 0 16px;
+    }
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow);
+      padding: 32px;
+      position: relative;
+    }
+
+    .tool-tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(226, 232, 240, 0.5);
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: transparent;
+      color: var(--slate-500);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--indigo-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      background: rgba(245, 247, 255, 0.4);
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .dropzone:hover {
+      border-color: var(--indigo-accent);
+      background: rgba(224, 231, 255, 0.3);
+    }
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .dropzone-label { font-weight: 600; font-size: 0.95rem; color: var(--slate-700); }
+    .dropzone-sub { font-size: 0.8rem; color: var(--slate-500); margin-top: 4px; }
+
+    .doc-guidance-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(224, 231, 255, 0.45);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: var(--slate-700);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    #clipList { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+      margin-bottom: 20px; 
+    }
+    .clip-card {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 12px;
+      position: relative;
+    }
+    .clip-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--slate-700);
+    }
+    .filmstrip-container {
+      position: relative;
+      height: 48px;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: default;
+    }
+    .filmstrip-canvas { width: 100%; height: 100%; display: block; }
+    .trimmer-overlay {
+      position: absolute;
+      top: 0; bottom: 0; left: 0; width: 100%;
+      background: rgba(99, 102, 241, 0.3);
+      cursor: move;
+      pointer-events: auto;
+    }
+    
+    .handle {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 14px;
+      background: var(--indigo-primary);
+      border-radius: 4px;
+      cursor: ew-resize;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      pointer-events: auto;
+    }
+    .handle-left { left: -7px; }
+    .handle-right { right: -7px; }
+    .handle::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px; height: 12px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 1px;
+    }
+
+    .meter-panel {
+      background: rgba(241, 245, 249, 0.6);
+      border: 1px solid var(--slate-200);
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .indicator-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #16a34a;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    }
+    .indicator-dot.exceeded {
+      background: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    }
+    .meter-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .meter-bar-fill {
+      height: 100%;
+      background: var(--indigo-accent);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+    input[type="range"], select { width: 100%; box-sizing: border-box; }
+    select {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--slate-200);
+      padding: 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--slate-700);
+    }
+    .slider-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 4px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--indigo-primary) 0%, #3730a3 100%);
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.25);
+      transition: all 0.2s ease;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.95; transform: translateY(-1px); }
+    .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover:not(:disabled) { opacity: 0.95; transform: translateY(-1px); }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--slate-200);
+      color: var(--slate-700);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-outline:hover { background: #ffffff; border-color: var(--indigo-primary); color: var(--indigo-primary); }
+
+    .status-text {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-500);
+      text-align: center;
+    }
+    .preview-box {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--slate-200);
+      text-align: center;
+      display: none;
+    }
+    .preview-box img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 12px auto;
+      display: block;
+      border: 1px solid var(--slate-200);
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 20px;
+    }
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Word DOCX Interactive Preview Modal */
+    .docx-modal-card {
+      background: #f8fafc;
+      border-radius: 16px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+    }
+    .docx-modal-header {
+      background: #ffffff;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .docx-banner {
+      background: #eff6ff;
+      border-bottom: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 10px 24px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .docx-preview-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 16px;
+      background: #cbd5e1;
+      display: flex;
+      justify-content: center;
+    }
+    .docx-page-container {
+      width: 100%;
+      max-width: 794px;
+      min-height: 1000px;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      padding: 48px;
+      border-radius: 4px;
+      column-gap: 28px;
+    }
+    .docx-page-container [style*="column-count"],
+    .docx-page-container .docx-wrapper {
+      column-gap: 28px !important;
+      word-wrap: break-word;
+    }
+    .docx-fallback-box {
+      border: 1px dashed #6366f1;
+      background: #f5f7ff;
+      padding: 12px;
+      margin: 12px 0;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.82rem;
+      border-radius: 6px;
+    }
+    .docx-modal-footer {
+      background: #ffffff;
+      padding: 16px 24px;
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .docx-footer-actions { display: flex; gap: 10px; }
+
+    /* Pricing Section & Launching Soon State */
+    .pricing-section {
+      max-width: 880px;
+      margin: 0 auto 64px;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .pricing-header { margin-bottom: 40px; }
+    .pricing-header h2 { font-size: 1.8rem; color: var(--slate-900); font-weight: 700; }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      text-align: left;
+    }
+    .price-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .price-card.pro-disabled {
+      opacity: 0.58;
+      border: 1px dashed var(--slate-300);
+      filter: grayscale(15%);
+      pointer-events: none;
+      user-select: none;
+    }
+    .tier-badge-upcoming {
+      position: absolute;
+      top: -12px;
+      right: 24px;
+      background: #475569;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .price-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin: 12px 0 20px;
+    }
+    .price-value span { font-size: 0.95rem; color: var(--slate-500); font-weight: 400; }
+    .feature-list { list-style: none; margin-bottom: 24px; }
+    .feature-list li {
+      font-size: 0.9rem;
+      color: var(--slate-700);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feature-list li::before {
+      content: "✓";
+      color: var(--indigo-primary);
+      font-weight: 700;
+    }
+
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--slate-200);
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 24px 32px;
+      font-size: 0.85rem;
+      color: var(--slate-500);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { color: var(--slate-500); text-decoration: none; }
+    .footer-links a:hover { color: var(--indigo-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="brand">
+      ZippaGif
+      <span class="brand-pill">Client Engine</span>
+    </div>
+    <div class="nav-actions">
+      <div id="offlineBadge" class="offline-badge">
+        <span class="offline-dot"></span>
+        <span id="offlineStatusText">Offline Ready</span>
+      </div>
+      <button class="btn-outline" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">Plans & Editions</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-tagline">
+      🔒 100% Client-Side Engine • Zero Cloud Uploads
+    </div>
+    <h1>Professional File Conversion.<br>Zero Cloud Uploads.</h1>
+    <p>Convert video clips to lightweight GIFs or batch-process documents and Word (.docx) files locally.</p>
+  </header>
+
+  <!-- Core Tool Section -->
+  <main class="tool-wrapper">
+    <div class="glass-card">
+      <div class="tool-tabs">
+        <button class="tab-btn active" id="tabVideoBtn" onclick="switchTab('video')">Video to GIF</button>
+        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document & Image Suite</button>
+      </div>
+
+      <!-- VIEW 1: VIDEO TO GIF -->
+      <div id="viewVideo">
+        <div id="clipList"></div>
+
+        <div class="dropzone" id="videoDropzone">
+          <input type="file" id="videoInput" accept="video/*">
+          <div class="dropzone-label">Drop video file here, or browse</div>
+          <div class="dropzone-sub">Single Clip (Starter Plan) • MP4, WebM, MOV</div>
+        </div>
+
+        <div id="meterPanel" class="meter-panel" style="display:none;">
+          <div id="statusIndicator" class="indicator-dot"></div>
+          <div style="flex-grow: 1;">
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
+              <span>Frame Budget Allocation</span>
+              <span id="frameBudgetLabel">0 / 100 frames (0.0 sec)</span>
+            </div>
+            <div class="meter-bar">
+              <div id="meterFill" class="meter-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="fpsField" style="display:none; margin-top: 20px;">
+          <div class="slider-meta">
+            <label for="fpsSlider">Animation Frame Rate (FPS)</label>
+            <span id="fpsVal">10 FPS (10.0 sec max)</span>
+          </div>
+          <input type="range" id="fpsSlider" min="5" max="15" step="1" value="10">
+          <div class="slider-meta" style="margin-top: -2px;">
+            <span style="font-size: 0.75rem; color: var(--slate-500);">5 FPS (Smaller File / Longer Time)</span>
+            <span style="font-size: 0.75rem; color: var(--slate-500);">15 FPS (Smoother)</span>
+          </div>
+        </div>
+
+        <button id="convertBtn" class="btn-primary" disabled>Generate GIF</button>
+        <div id="status" class="status-text"></div>
+
+        <div id="previewContainer" class="preview-box">
+          <img id="gifOutput" alt="Generated GIF">
+          <a id="downloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="zippagif_output.gif">Download GIF</a>
+        </div>
+      </div>
+
+      <!-- VIEW 2: DOCUMENT & BATCH IMAGE SUITE -->
+      <div id="viewDoc" style="display: none;">
+        
+        <div class="doc-guidance-pill">
+          <span>ℹ️</span>
+          <span><strong>Format Notice:</strong> Best for reports, resumes, contracts, and standard documents. Complex multi-layer flyers or proprietary SmartArt can also be printed via the Browser Print Engine.</span>
+        </div>
+
+        <div class="dropzone">
+          <input type="file" id="docInput" accept=".pdf, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*, .tiff, .tif" multiple>
+          <div class="dropzone-label">Drop files here, or browse (Up to 50 files)</div>
+          <div class="dropzone-sub">Supports Word (.docx), .pdf, batch .jpg, .png, .webp, and multi-page .tiff</div>
+        </div>
+
+        <div id="docPanel" style="display: none;">
+          <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700); margin-bottom:14px;">Selected: -</div>
+          
+          <div class="field">
+            <label for="formatSelect">Target Format</label>
+            <select id="formatSelect">
+              <option value="image/webp">WebP Images</option>
+              <option value="image/jpeg">JPEG Images</option>
+              <option value="image/png">PNG Images</option>
+              <option value="application/pdf">PDF Document</option>
+            </select>
+          </div>
+
+          <button id="convertDocBtn" class="btn-primary" style="margin-top: 12px;">Convert All to Batch ZIP</button>
+        </div>
+
+        <div id="docStatus" class="status-text"></div>
+        <div id="docPreviewContainer" class="preview-box">
+          <img id="docOutputImg" alt="Converted Result">
+          <a id="docDownloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="converted">Download Result</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Pricing Section -->
+  <section class="pricing-section" id="pricing">
+    <div class="pricing-header">
+      <h2>Simple, Transparent Licensing</h2>
+      <p style="color: var(--slate-500); font-size: 0.95rem; margin-top: 4px;">Unlimited speed with direct client processing. No subscription traps.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Active Free Plan -->
+      <div class="price-card">
+        <div>
+          <h3 style="font-weight: 600;">Starter Sandbox</h3>
+          <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 2px;">Essential quick conversions</p>
+          <div class="price-value">$0 <span>/ free forever</span></div>
+          <ul class="feature-list">
+            <li>Word (.docx) to PDF with Dual Engines</li>
+            <li>100-Frame Budget (~10 sec @ 10 FPS)</li>
+            <li>5 to 15 FPS Custom Selector</li>
+            <li>Single Clip Video Converter</li>
+            <li>Auto-Scales to 480p Longest Side</li>
+            <li>Up to 50 Files Document Queue</li>
+          </ul>
+        </div>
+        <button class="btn-outline" style="width: 100%;" disabled>Current Active Plan</button>
+      </div>
+
+      <!-- Lowered Opacity Pro Placeholder -->
+      <div class="price-card pro-disabled">
+        <div class="tier-badge-upcoming">Launching Soon</div>
+        <div>
+          <h3 style="font-weight: 600;">Professional Pro</h3>
+          <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 2px;">For content power-users</p>
+          <div class="price-value">$19.99 <span>/ lifetime access</span></div>
+          <ul class="feature-list">
+            <li><strong>Multi-Clip Video Sequencing (Up to 10 Clips)</strong></li>
+            <li>300-Frame Budget (~30 sec @ 10 FPS)</li>
+            <li>Expanded 5 to 24 FPS Frame Rate Range</li>
+            <li>Drag & Drop Visual Timeline Rearranging</li>
+            <li>500-File Batch Document Queue</li>
+          </ul>
+        </div>
+        <button class="btn-primary" style="background: #94a3b8; cursor: not-allowed;" disabled>Coming Soon</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Word (.docx) Preview & Confirmation Modal -->
+  <div class="modal-backdrop" id="docxPreviewModal">
+    <div class="docx-modal-card">
+      <div class="docx-modal-header">
+        <div>
+          <h3 id="docxModalTitle" style="font-size: 1.1rem; font-weight: 700; color: var(--slate-900);">Document Preview</h3>
+          <span style="font-size: 0.75rem; color: var(--slate-500);">Rendered via client-side Document Object Model parser</span>
+        </div>
+        <button class="btn-outline" onclick="closeDocxModal()">✕ Close</button>
+      </div>
+      
+      <div class="docx-banner">
+        <span>⚠️</span>
+        <span>Preview rendered locally in-browser. Please inspect column alignment and page breaks before exporting.</span>
+      </div>
+
+      <div class="docx-preview-viewport">
+        <div class="docx-page-container" id="docxRenderBody"></div>
+      </div>
+
+      <div class="docx-modal-footer">
+        <span id="docxExportStatus" style="font-size: 0.85rem; font-weight: 600; color: var(--slate-500);">Ready to export.</span>
+        <div class="docx-footer-actions">
+          <button class="btn-outline" onclick="closeDocxModal()">Cancel</button>
+          <button class="btn-secondary" id="docxNativePrintBtn" onclick="exportDocxNativePrint()">Print / Save via Browser Engine</button>
+          <button class="btn-primary" id="docxStandardPdfBtn" style="width: auto;" onclick="exportDocxStandardPdf()">Export to PDF (Standard)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>© 2026 ZippaGif. A product of Singha Publishing LLC. Fully client-side software.</div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="licenses.html">Open Source</a>
+      <a href="mailto:support@zippagif.com">Contact</a>
+    </div>
+  </footer>
+
+  <canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+  <script>
+    const MAX_FRAMES = 100;
+    const MAX_DIMENSION = 480;
+    const MAX_DOC_BATCH = 50;
+
+    /* =========================================================
+       DYNAMIC LAZY LOADER FOR DOCX ENGINES
+       ========================================================= */
+    let docxLibrariesLoaded = false;
+    let docxLibrariesLoading = false;
+
+    async function ensureDocxLibrariesLoaded() {
+      if (docxLibrariesLoaded) return true;
+      if (docxLibrariesLoading) {
+        return new Promise(resolve => {
+          const check = setInterval(() => {
+            if (docxLibrariesLoaded) { clearInterval(check); resolve(true); }
+          }, 100);
+        });
+      }
+      docxLibrariesLoading = true;
+
+      const loadScript = (src) => new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+
+      try {
+        await Promise.all([
+          loadScript('https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js'),
+          loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js')
+        ]);
+        docxLibrariesLoaded = true;
+        docxLibrariesLoading = false;
+        return true;
+      } catch (err) {
+        docxLibrariesLoading = false;
+        throw new Error('Failed to load Word conversion libraries: ' + err.message);
+      }
+    }
+
+    /* =========================================================
+       WORD (.DOCX) PROCESSING & FALLBACKS
+       ========================================================= */
+    let activeDocxFile = null;
+    let activeDocxBuffer = null;
+
+    async function handleDocxUpload(file) {
+      activeDocxFile = file;
+      document.getElementById('docxModalTitle').textContent = `Preview: ${file.name}`;
+      document.getElementById('docxExportStatus').textContent = 'Loading Word parser engine...';
+      document.getElementById('docxPreviewModal').classList.add('active');
+      
+      const renderContainer = document.getElementById('docxRenderBody');
+      renderContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Parsing document structure...</div>';
+
+      try {
+        await ensureDocxLibrariesLoaded();
+        activeDocxBuffer = await file.arrayBuffer();
+
+        renderContainer.innerHTML = '';
+        await docx.renderAsync(activeDocxBuffer, renderContainer, null, {
+          className: 'docx',
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          useBase64URL: true,
+          renderChanges: false
+        });
+
+        applyDocxElementFallbacks(renderContainer);
+        document.getElementById('docxExportStatus').textContent = 'Inspection ready. Choose export engine below.';
+      } catch (err) {
+        console.error(err);
+        renderContainer.innerHTML = `<div style="color:#dc2626; padding:24px; text-align:center;">Failed to render Word preview: ${err.message}</div>`;
+        document.getElementById('docxExportStatus').textContent = 'Error parsing .docx file.';
+      }
+    }
+
+    function applyDocxElementFallbacks(container) {
+      const potentialObjects = container.querySelectorAll('svg:empty, canvas:empty, [class*="drawing"], [class*="smartart"], [data-drawing]');
+      potentialObjects.forEach(node => {
+        if (node.offsetWidth === 0 || node.offsetHeight === 0 || node.children.length === 0) {
+          const fallback = document.createElement('div');
+          fallback.className = 'docx-fallback-box';
+          fallback.innerHTML = '[Embedded Office Object / SmartArt: View in original Word application]';
+          node.parentNode.replaceChild(fallback, node);
+        }
+      });
+    }
+
+    function closeDocxModal() {
+      document.getElementById('docxPreviewModal').classList.remove('active');
+      activeDocxFile = null;
+      activeDocxBuffer = null;
+    }
+
+    async function exportDocxStandardPdf() {
+      const renderContainer = document.getElementById('docxRenderBody');
+      const status = document.getElementById('docxExportStatus');
+      const btn = document.getElementById('docxStandardPdfBtn');
+
+      btn.disabled = true;
+      status.textContent = 'Generating PDF with Standard Engine...';
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: activeDocxFile ? activeDocxFile.name.replace(/\.[^/.]+$/, "") + '.pdf' : 'document.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      };
+
+      try {
+        await html2pdf().set(opt).from(renderContainer).save();
+        status.textContent = 'Standard PDF exported successfully!';
+      } catch (err) {
+        status.textContent = 'Standard Export failed: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function exportDocxNativePrint() {
+      const renderContainer = document.getElementById('docxRenderBody');
+      const printWindow = window.open('', '_blank', 'width=900,height=800');
+      const docxHtml = renderContainer.innerHTML;
+      
+      printWindow.document.open();
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${activeDocxFile ? activeDocxFile.name : 'Print Document'}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20mm; color: #000; }
+            .docx-wrapper { width: 100% !important; padding: 0 !important; }
+            .docx-fallback-box { border: 1px dashed #6366f1; padding: 12px; margin: 8px 0; text-align: center; color: #64748b; font-size: 0.8rem; border-radius: 6px; }
+            [style*="column-count"] { column-gap: 28px !important; }
+            @page { size: auto; margin: 15mm; }
+            @media print {
+              body { padding: 0; }
+              .page-break { page-break-after: always; }
+            }
+          </style>
+        </head>
+        <body>
+          <div>${docxHtml}</div>
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+              window.close();
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    /* =========================================================
+       SECTION 1: VIDEO TO GIF ENGINE
+       ========================================================= */
+    const videoInput = document.getElementById('videoInput');
+    const videoDropzone = document.getElementById('videoDropzone');
+    const clipList = document.getElementById('clipList');
+    const meterPanel = document.getElementById('meterPanel');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const frameBudgetLabel = document.getElementById('frameBudgetLabel');
+    const meterFill = document.getElementById('meterFill');
+    const fpsField = document.getElementById('fpsField');
+    const fpsSlider = document.getElementById('fpsSlider');
+    const fpsVal = document.getElementById('fpsVal');
+    const convertBtn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+    const hiddenCanvas = document.getElementById('hiddenCanvas');
+    const previewContainer = document.getElementById('previewContainer');
+    const gifOutput = document.getElementById('gifOutput');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let clips = [];
+
+    function calculateTargetDimensions(videoWidth, videoHeight, maxBound = 480) {
+      let targetWidth, targetHeight;
+      if (videoWidth >= videoHeight) {
+        targetWidth = Math.min(videoWidth, maxBound);
+        targetHeight = Math.round((targetWidth / videoWidth) * videoHeight);
+      } else {
+        targetHeight = Math.min(videoHeight, maxBound);
+        targetWidth = Math.round((targetHeight / videoHeight) * videoWidth);
+      }
+      return { targetWidth, targetHeight };
+    }
+
+    videoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      clips = [];
+      clipList.innerHTML = '';
+      status.textContent = 'Loading video...';
+
+      try {
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.src = url;
+        video.preload = 'auto';
+        video.muted = true;
+
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = resolve;
+          video.onerror = reject;
+          setTimeout(() => reject(new Error("Video load timeout")), 10000);
+        });
+
+        const currentFps = parseInt(fpsSlider.value, 10);
+        const initialMaxSec = MAX_FRAMES / currentFps;
+
+        const clip = {
+          id: 'clip-' + Date.now(),
+          file, url, video,
+          duration: video.duration,
+          startPct: 0,
+          endPct: Math.min(1, Math.max(0.05, initialMaxSec / video.duration))
+        };
+
+        clips.push(clip);
+        renderClipCard(clip);
+        updateUiState();
+        videoInput.value = '';
+      } catch (err) {
+        status.textContent = 'Error loading video: ' + err.message;
+      }
+    });
+
+    fpsSlider.addEventListener('input', () => {
+      const fps = parseInt(fpsSlider.value, 10);
+      const maxSec = (MAX_FRAMES / fps).toFixed(1);
+      fpsVal.textContent = `${fps} FPS (${maxSec} sec max)`;
+      updateBudgetMeter();
+    });
+
+    function updateUiState() {
+      if (clips.length > 0) {
+        meterPanel.style.display = 'flex';
+        fpsField.style.display = 'block';
+        videoDropzone.style.display = 'none';
+        convertBtn.disabled = false;
+        status.textContent = 'Clip loaded. Trim your selection below.';
+      } else {
+        meterPanel.style.display = 'none';
+        fpsField.style.display = 'none';
+        videoDropzone.style.display = 'block';
+        convertBtn.disabled = true;
+      }
+      updateBudgetMeter();
+    }
+
+    function renderClipCard(clip) {
+      const card = document.createElement('div');
+      card.className = 'clip-card';
+      card.innerHTML = `
+        <div class="clip-header">
+          <span>${clip.file.name}</span>
+          <span class="clip-time-info">0.0 sec - ${(clip.endPct * clip.duration).toFixed(1)} sec</span>
+        </div>
+        <div class="filmstrip-container">
+          <canvas class="filmstrip-canvas"></canvas>
+          <div class="trimmer-overlay">
+            <div class="handle handle-left"></div>
+            <div class="handle handle-right"></div>
+          </div>
+        </div>
+      `;
+      clipList.appendChild(card);
+      setupTrimmer(card, clip);
+      generateFilmstrip(card, clip);
+    }
+
+    async function generateFilmstrip(card, clip) {
+      const canvas = card.querySelector('.filmstrip-canvas');
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width || 600;
+      canvas.height = rect.height || 48;
+
+      const thumbCount = 8;
+      const thumbWidth = canvas.width / thumbCount;
+      const step = clip.duration / thumbCount;
+
+      for (let i = 0; i < thumbCount; i++) {
+        clip.video.currentTime = i * step;
+        await new Promise(r => clip.video.onseeked = r);
+        ctx.drawImage(clip.video, i * thumbWidth, 0, thumbWidth, canvas.height);
+      }
+    }
+
+    function setupTrimmer(card, clip) {
+      const container = card.querySelector('.filmstrip-container');
+      const overlay = card.querySelector('.trimmer-overlay');
+      const handleL = card.querySelector('.handle-left');
+      const handleR = card.querySelector('.handle-right');
+      const timeInfo = card.querySelector('.clip-time-info');
+
+      let active = null;
+      let startX = 0, startStartPct = 0, startEndPct = 1;
+
+      const onMouseDown = (e, type) => {
+        e.preventDefault();
+        e.stopPropagation();
+        active = type;
+        startX = e.clientX;
+        startStartPct = clip.startPct;
+        startEndPct = clip.endPct;
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      };
+
+      handleL.addEventListener('mousedown', (e) => onMouseDown(e, 'left'));
+      handleR.addEventListener('mousedown', (e) => onMouseDown(e, 'right'));
+      overlay.addEventListener('mousedown', (e) => {
+        if (e.target === handleL || e.target === handleR) return;
+        onMouseDown(e, 'move');
+      });
+
+      function onMouseMove(e) {
+        if (!active) return;
+        const rect = container.getBoundingClientRect();
+        const delta = (e.clientX - startX) / rect.width;
+        const minWindow = 0.02;
+
+        if (active === 'left') {
+          clip.startPct = Math.max(0, Math.min(startStartPct + delta, clip.endPct - minWindow));
+        } else if (active === 'right') {
+          clip.endPct = Math.min(1, Math.max(startEndPct + delta, clip.startPct + minWindow));
+        } else if (active === 'move') {
+          const w = startEndPct - startStartPct;
+          let ns = startStartPct + delta;
+          let ne = startEndPct + delta;
+          if (ns < 0) { ns = 0; ne = w; }
+          else if (ne > 1) { ne = 1; ns = 1 - w; }
+          clip.startPct = ns;
+          clip.endPct = ne;
+        }
+
+        overlay.style.left = (clip.startPct * 100) + '%';
+        overlay.style.width = ((clip.endPct - clip.startPct) * 100) + '%';
+        timeInfo.textContent = `${(clip.startPct * clip.duration).toFixed(1)} sec - ${(clip.endPct * clip.duration).toFixed(1)} sec`;
+        updateBudgetMeter();
+      }
+
+      function onMouseUp() {
+        active = null;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+
+      overlay.style.left = (clip.startPct * 100) + '%';
+      overlay.style.width = ((clip.endPct - clip.startPct) * 100) + '%';
+    }
+
+    function updateBudgetMeter() {
+      if (!clips.length) return;
+      const fps = parseInt(fpsSlider.value, 10);
+      const clip = clips[0];
+      const selectedSec = (clip.endPct - clip.startPct) * clip.duration;
+      const estimatedFrames = Math.round(selectedSec * fps);
+      const pct = Math.min(100, Math.round((estimatedFrames / MAX_FRAMES) * 100));
+
+      frameBudgetLabel.textContent = `${estimatedFrames} / ${MAX_FRAMES} frames (${selectedSec.toFixed(1)} sec)`;
+      meterFill.style.width = `${pct}%`;
+
+      if (estimatedFrames <= MAX_FRAMES) {
+        statusIndicator.classList.remove('exceeded');
+        meterFill.style.backgroundColor = 'var(--indigo-accent)';
+        convertBtn.disabled = false;
+        if (!convertBtn.disabled && !convertBtn.textContent.includes('Generating')) {
+          status.textContent = 'Ready to convert.';
+        }
+      } else {
+        statusIndicator.classList.add('exceeded');
+        meterFill.style.backgroundColor = '#dc2626';
+        convertBtn.disabled = true;
+        status.textContent = `Selection (${estimatedFrames} frames) exceeds budget of ${MAX_FRAMES} frames. Trim clip or lower FPS.`;
+      }
+    }
+
+    convertBtn.addEventListener('click', async () => {
+      convertBtn.disabled = true;
+      convertBtn.textContent = 'Generating GIF...';
+      status.textContent = 'Processing frames in worker thread...';
+      previewContainer.style.display = 'none';
+
+      const clip = clips[0];
+      const fps = parseInt(fpsSlider.value, 10);
+      const { targetWidth, targetHeight } = calculateTargetDimensions(clip.video.videoWidth, clip.video.videoHeight, MAX_DIMENSION);
+
+      hiddenCanvas.width = targetWidth;
+      hiddenCanvas.height = targetHeight;
+      const ctx = hiddenCanvas.getContext('2d');
+
+      const workerBlob = new Blob([`importScripts('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');`], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(workerBlob);
+
+      const gif = new GIF({
+        workers: 4,
+        quality: 10,
+        width: targetWidth,
+        height: targetHeight,
+        workerScript: workerUrl
+      });
+
+      const stepTime = 1 / fps;
+      const startTime = clip.startPct * clip.duration;
+      const endTime = clip.endPct * clip.duration;
+      let currentTime = startTime;
+
+      while (currentTime < endTime && currentTime < clip.duration) {
+        clip.video.currentTime = currentTime;
+        await new Promise(r => {
+          const onSeek = () => { clip.video.removeEventListener('seeked', onSeek); r(); };
+          clip.video.addEventListener('seeked', onSeek);
+          setTimeout(onSeek, 400);
+        });
+
+        ctx.drawImage(clip.video, 0, 0, targetWidth, targetHeight);
+        gif.addFrame(ctx, { copy: true, delay: Math.round(1000 / fps) });
+        currentTime += stepTime;
+      }
+
+      status.textContent = 'Encoding GIF with NeuQuant quantization...';
+      gif.on('finished', (blob) => {
+        const gifUrl = URL.createObjectURL(blob);
+        gifOutput.src = gifUrl;
+        downloadLink.href = gifUrl;
+        previewContainer.style.display = 'block';
+        status.textContent = `Conversion complete! (${targetWidth}x${targetHeight}px, ${fps} FPS).`;
+        convertBtn.disabled = false;
+        convertBtn.textContent = 'Generate GIF';
+        URL.revokeObjectURL(workerUrl);
+      });
+
+      gif.render();
+    });
+
+    /* =========================================================
+       SECTION 2: DOCUMENT & BATCH IMAGE SUITE
+       ========================================================= */
+    const docInput = document.getElementById('docInput');
+    const docPanel = document.getElementById('docPanel');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const formatSelect = document.getElementById('formatSelect');
+    const convertDocBtn = document.getElementById('convertDocBtn');
+    const docStatus = document.getElementById('docStatus');
+    const docPreviewContainer = document.getElementById('docPreviewContainer');
+    const docOutputImg = document.getElementById('docOutputImg');
+    const docDownloadLink = document.getElementById('docDownloadLink');
+
+    let batchQueue = [];
+
+    docInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files).slice(0, MAX_DOC_BATCH);
+      if (!files.length) return;
+
+      if (files.length === 1 && files[0].name.toLowerCase().endsWith('.docx')) {
+        handleDocxUpload(files[0]);
+        docInput.value = '';
+        return;
+      }
+
+      batchQueue = [];
+      docStatus.textContent = `Queuing ${files.length} file(s)...`;
+      docPanel.style.display = 'block';
+      docPreviewContainer.style.display = 'none';
+
+      for (let f = 0; f < files.length; f++) {
+        const file = files[f];
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        try {
+          if (file.type === 'application/pdf') {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            for (let p = 1; p <= pdf.numPages; p++) {
+              const page = await pdf.getPage(p);
+              batchQueue.push({
+                name: `${file.name.replace(/\.[^/.]+$/, "")}_page_${p}`,
+                type: 'pdf-page',
+                data: page
+              });
+            }
+          } else if (ext === 'docx') {
+            await ensureDocxLibrariesLoaded();
+            const tempDiv = document.createElement('div');
+            tempDiv.style.width = '794px';
+            tempDiv.style.padding = '40px';
+            tempDiv.style.background = '#fff';
+            const arrayBuffer = await file.arrayBuffer();
+            await docx.renderAsync(arrayBuffer, tempDiv);
+            applyDocxElementFallbacks(tempDiv);
+            
+            document.body.appendChild(tempDiv);
+            const canvas = await html2canvas(tempDiv, { scale: 1.5 });
+            document.body.removeChild(tempDiv);
+
+            batchQueue.push({
+              name: file.name.replace(/\.[^/.]+$/, ""),
+              type: 'canvas',
+              data: canvas
+            });
+          } else if (ext === 'tiff' || ext === 'tif') {
+            const arrayBuffer = await file.arrayBuffer();
+            const ifds = UTIF.decode(arrayBuffer);
+            for (let i = 0; i < ifds.length; i++) {
+              UTIF.decodeImage(arrayBuffer, ifds[i]);
+              const rgba = UTIF.toRGBA8(ifds[i]);
+              const canvas = document.createElement('canvas');
+              canvas.width = ifds[i].width;
+              canvas.height = ifds[i].height;
+              const ctx = canvas.getContext('2d');
+              const imgData = ctx.createImageData(canvas.width, canvas.height);
+              imgData.data.set(rgba);
+              ctx.putImageData(imgData, 0, 0);
+
+              batchQueue.push({
+                name: `${file.name.replace(/\.[^/.]+$/, "")}_frame_${i + 1}`,
+                type: 'canvas',
+                data: canvas
+              });
+            }
+          } else {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            await new Promise(r => img.onload = r);
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            batchQueue.push({
+              name: file.name.replace(/\.[^/.]+$/, ""),
+              type: 'canvas',
+              data: canvas
+            });
+          }
+        } catch (err) {
+          console.error("Error loading file in batch:", file.name, err);
+        }
+      }
+
+      selectedFileName.textContent = `Batch Ready: ${files.length} file(s) loaded (${batchQueue.length} total render frames).`;
+      convertDocBtn.textContent = batchQueue.length > 1 ? `Convert All ${batchQueue.length} Frames (ZIP)` : `Convert Image`;
+      docStatus.textContent = 'Batch loaded. Choose target format below.';
+      docInput.value = '';
+    });
+
+    convertDocBtn.addEventListener('click', async () => {
+      if (!batchQueue.length) return;
+      convertDocBtn.disabled = true;
+      docStatus.textContent = 'Processing multi-file batch...';
+      docPreviewContainer.style.display = 'none';
+
+      const targetFormat = formatSelect.value;
+      const ext = targetFormat === 'application/pdf' ? 'pdf' : targetFormat.split('/')[1];
+
+      if (targetFormat === 'application/pdf') {
+        const { jsPDF } = window.jspdf;
+        let pdfDocOut = null;
+
+        for (let i = 0; i < batchQueue.length; i++) {
+          docStatus.textContent = `Adding item ${i + 1} of ${batchQueue.length} to PDF...`;
+          const canvas = await renderDocItem(batchQueue[i]);
+          const imgData = canvas.toDataURL('image/jpeg', 0.85);
+          const orientation = canvas.width > canvas.height ? 'l' : 'p';
+
+          if (i === 0) {
+            pdfDocOut = new jsPDF(orientation, 'px', [canvas.width, canvas.height]);
+            pdfDocOut.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+          } else {
+            pdfDocOut.addPage([canvas.width, canvas.height], orientation);
+            pdfDocOut.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+          }
+        }
+
+        const pdfBlob = pdfDocOut.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        docOutputImg.style.display = 'none';
+        docDownloadLink.href = pdfUrl;
+        docDownloadLink.download = 'zippagif_batch_combined.pdf';
+        docDownloadLink.textContent = 'Download Combined PDF';
+        docPreviewContainer.style.display = 'block';
+        docStatus.textContent = `All ${batchQueue.length} items merged into PDF!`;
+      } else if (batchQueue.length === 1) {
+        const canvas = await renderDocItem(batchQueue[0]);
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          docOutputImg.src = url;
+          docOutputImg.style.display = 'block';
+          docDownloadLink.href = url;
+          docDownloadLink.download = `${batchQueue[0].name}.${ext}`;
+          docDownloadLink.textContent = `Download ${ext.toUpperCase()}`;
+          docPreviewContainer.style.display = 'block';
+          docStatus.textContent = 'Conversion complete.';
+        }, targetFormat, 0.85);
+      } else {
+        const zip = new JSZip();
+        for (let i = 0; i < batchQueue.length; i++) {
+          docStatus.textContent = `Encoding item ${i + 1} of ${batchQueue.length}...`;
+          const canvas = await renderDocItem(batchQueue[i]);
+          const blob = await new Promise(r => canvas.toBlob(r, targetFormat, 0.85));
+          zip.file(`${batchQueue[i].name}.${ext}`, blob);
+        }
+
+        docStatus.textContent = `Zipping ${batchQueue.length} files...`;
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const zipUrl = URL.createObjectURL(zipBlob);
+        docOutputImg.style.display = 'none';
+        docDownloadLink.href = zipUrl;
+        docDownloadLink.download = `zippagif_batch_${ext}.zip`;
+        docDownloadLink.textContent = `Download All ${batchQueue.length} Files (ZIP)`;
+        docPreviewContainer.style.display = 'block';
+        docStatus.textContent = `Batch conversion finished: ${batchQueue.length} files bundled.`;
+      }
+
+      convertDocBtn.disabled = false;
+    });
+
+    async function renderDocItem(item) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (item.type === 'pdf-page') {
+        const viewport = item.data.getViewport({ scale: 1.5 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await item.data.render({ canvasContext: ctx, viewport }).promise;
+      } else {
+        canvas.width = item.data.width;
+        canvas.height = item.data.height;
+        ctx.drawImage(item.data, 0, 0);
+      }
+      return canvas;
+    }
+
+    function switchTab(type) {
+      document.getElementById('tabVideoBtn').classList.toggle('active', type === 'video');
+      document.getElementById('tabDocBtn').classList.toggle('active', type === 'doc');
+      document.getElementById('viewVideo').style.display = type === 'video' ? 'block' : 'none';
+      document.getElementById('viewDoc').style.display = type === 'doc' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
