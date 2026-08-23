@@ -549,9 +549,19 @@
       font-size: 2.2rem;
       font-weight: 700;
       color: var(--slate-900);
-      margin: 12px 0 20px;
+      margin: 12px 0 6px;
     }
     .price-value span { font-size: 0.95rem; color: var(--slate-500); font-weight: 400; }
+    .price-suboption {
+      font-size: 0.85rem;
+      color: var(--indigo-primary);
+      font-weight: 600;
+      margin-bottom: 20px;
+      background: rgba(224, 231, 255, 0.4);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
     .feature-list { list-style: none; margin-bottom: 24px; }
     .feature-list li {
       font-size: 0.9rem;
@@ -706,7 +716,7 @@
   <section class="pricing-section" id="pricing">
     <div class="pricing-header">
       <h2>Simple, Transparent Licensing</h2>
-      <p style="color: var(--slate-500); font-size: 0.95rem; margin-top: 4px;">Unlimited speed with direct client processing. No subscription traps.</p>
+      <p style="color: var(--slate-500); font-size: 0.95rem; margin-top: 4px;">Unlimited speed with direct client processing. Cancel anytime.</p>
     </div>
 
     <div class="pricing-grid">
@@ -716,6 +726,7 @@
           <h3 style="font-weight: 600;">Starter Sandbox</h3>
           <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 2px;">Essential quick conversions</p>
           <div class="price-value">$0 <span>/ free forever</span></div>
+          <div class="price-suboption" style="visibility: hidden;">No card required</div>
           <ul class="feature-list">
             <li>Word (.docx) to PDF with Dual Engines</li>
             <li>100-Frame Budget (~10 sec @ 10 FPS)</li>
@@ -728,13 +739,14 @@
         <button class="btn-outline" style="width: 100%;" disabled>Current Active Plan</button>
       </div>
 
-      <!-- Lowered Opacity Pro Placeholder -->
+      <!-- Lowered Opacity Pro Placeholder (Monthly & Yearly Tiers) -->
       <div class="price-card pro-disabled">
         <div class="tier-badge-upcoming">Launching Soon</div>
         <div>
           <h3 style="font-weight: 600;">Professional Pro</h3>
-          <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 2px;">For content power-users</p>
-          <div class="price-value">$19.99 <span>/ lifetime access</span></div>
+          <p style="font-size: 0.85rem; color: var(--slate-500); margin-top: 2px;">For content creators & power-users</p>
+          <div class="price-value">$4.99 <span>/ month</span></div>
+          <div class="price-suboption">or $29.99 / year (Save 50%)</div>
           <ul class="feature-list">
             <li><strong>Multi-Clip Video Sequencing (Up to 10 Clips)</strong></li>
             <li>300-Frame Budget (~30 sec @ 10 FPS)</li>
