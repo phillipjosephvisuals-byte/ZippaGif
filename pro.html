@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZippaGif Pro | Client-Side Video & Document Engine</title>
   
-  <!-- Fonts & Libraries -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,7 +53,6 @@
       top: 0;
       z-index: 100;
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       background: rgba(255, 255, 255, 0.7);
       border-bottom: 1px solid rgba(226, 232, 240, 0.8);
       padding: 16px 32px;
@@ -82,24 +80,6 @@
       letter-spacing: 0.05em;
     }
     .nav-actions { display: flex; gap: 12px; align-items: center; }
-
-    .offline-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 12px;
-      background: #ecfdf5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
-    }
-    .offline-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-    }
 
     .hero {
       text-align: center;
@@ -139,7 +119,6 @@
     .glass-card {
       background: var(--glass-bg);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       box-shadow: var(--glass-shadow);
@@ -199,7 +178,7 @@
 
     #clipList { 
       display: flex; 
-      flex-direction: column-reverse; 
+      flex-direction: column; 
       gap: 16px; 
       margin-bottom: 20px; 
     }
@@ -297,13 +276,6 @@
       transition: width 0.2s ease;
     }
 
-    .field-row {
-      display: flex;
-      gap: 16px;
-      align-items: flex-end;
-      margin-bottom: 16px;
-    }
-    .field-row .field { flex: 1; margin-bottom: 0; }
     .field { margin-bottom: 16px; }
     .field label {
       display: block;
@@ -312,19 +284,7 @@
       color: var(--slate-700);
       margin-bottom: 6px;
     }
-    select, input[type="range"] {
-      width: 100%;
-      box-sizing: border-box;
-    }
-    select {
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid var(--slate-200);
-      padding: 10px;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      color: var(--slate-700);
-    }
+    input[type="range"] { width: 100%; box-sizing: border-box; }
     .slider-meta {
       display: flex;
       justify-content: space-between;
@@ -333,17 +293,6 @@
       color: var(--slate-700);
       margin-bottom: 4px;
     }
-
-    .badge-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .badge {
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
-    .badge-neutral { background: var(--slate-200); color: var(--slate-700); }
-    .badge-brand { background: var(--indigo-light); color: var(--indigo-primary); }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--indigo-primary) 0%, #3730a3 100%);
@@ -412,36 +361,29 @@
 </head>
 <body>
 
-  <!-- Navigation -->
   <nav class="navbar">
     <div class="brand">
       ZippaGif
       <span class="brand-pill">Pro Edition</span>
     </div>
     <div class="nav-actions">
-      <div id="offlineBadge" class="offline-badge">
-        <span class="offline-dot"></span>
-        <span id="offlineStatusText">Caching Offline...</span>
-      </div>
       <a href="index.html" class="btn-outline" style="text-decoration: none;">Return to Standard</a>
     </div>
   </nav>
 
-  <!-- Hero -->
   <header class="hero">
     <div class="hero-tagline">
-      ★ Professional Unlimited License Active
+      ★ Pro Unlocked • Multi-Clip Sequencing Engine
     </div>
-    <h1>Professional File Conversion.<br>Zero Cloud Uploads.</h1>
-    <p>Render high-resolution GIFs up to 1080p HD, sequence up to 10 clips, and batch-convert up to 500 documents & images.</p>
+    <h1>Professional Multi-Clip GIF Suite.<br>Zero Cloud Uploads.</h1>
+    <p>Sequence up to 10 video clips into a single merged GIF with custom frame rates up to 24 FPS.</p>
   </header>
 
-  <!-- Core Tool Section -->
   <main class="tool-wrapper">
     <div class="glass-card">
       <div class="tool-tabs">
-        <button class="tab-btn active" id="tabVideoBtn" onclick="switchTab('video')">Video to GIF Suite</button>
-        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document & Batch Image Suite</button>
+        <button class="tab-btn active" id="tabVideoBtn" onclick="switchTab('video')">Multi-Clip to GIF</button>
+        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document Suite</button>
       </div>
 
       <!-- VIEW 1: VIDEO TO GIF -->
@@ -451,15 +393,15 @@
         <div class="dropzone" id="videoDropzone">
           <input type="file" id="videoInput" accept="video/*">
           <div class="dropzone-label">Drop video file here, or browse</div>
-          <div class="dropzone-sub">Add up to 10 clips (MP4, WebM, MOV) • Pro Uncapped</div>
+          <div class="dropzone-sub">Add up to 10 clips to sequence (MP4, WebM, MOV)</div>
         </div>
 
         <div id="meterPanel" class="meter-panel" style="display:none;">
           <div id="statusIndicator" class="indicator-dot"></div>
           <div style="flex-grow: 1;">
             <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
-              <span>Total GIF Duration Allocation</span>
-              <span id="frameBudgetLabel">0.0 sec / 120.0 sec</span>
+              <span>Total Sequence Budget Allocation</span>
+              <span id="frameBudgetLabel">0 / 300 frames (0.0 sec)</span>
             </div>
             <div class="meter-bar">
               <div id="meterFill" class="meter-bar-fill"></div>
@@ -467,30 +409,24 @@
           </div>
         </div>
 
-        <div class="field-row" id="proVideoControls" style="display:none; margin-top: 20px;">
-          <div class="field">
-            <label for="gifResSelect">GIF Resolution Quality</label>
-            <select id="gifResSelect">
-              <option value="480">480p Standard (Fast Encode)</option>
-              <option value="720" selected>720p HD (Balanced)</option>
-              <option value="1080">1080p Full HD (Pro Max Quality)</option>
-            </select>
+        <div class="field" id="fpsField" style="display:none; margin-top: 20px;">
+          <div class="slider-meta">
+            <label for="fpsSlider">Animation Frame Rate (FPS)</label>
+            <span id="fpsVal">12 FPS (25.0 sec max)</span>
           </div>
-          <div class="field">
-            <div class="slider-meta">
-              <label for="durationGatingSlider">Target Max GIF Duration</label>
-              <span id="durationGatingVal">120.0 sec</span>
-            </div>
-            <input type="range" id="durationGatingSlider" min="1" max="120" step="1" value="120">
+          <input type="range" id="fpsSlider" min="5" max="24" step="1" value="12">
+          <div class="slider-meta" style="margin-top: -2px;">
+            <span style="font-size: 0.75rem; color: var(--slate-500);">5 FPS (Super Compact)</span>
+            <span style="font-size: 0.75rem; color: var(--slate-500);">24 FPS (Ultra Smooth)</span>
           </div>
         </div>
 
-        <button id="convertBtn" class="btn-primary" disabled>Generate Pro GIF</button>
+        <button id="convertBtn" class="btn-primary" disabled>Merge & Generate Pro GIF</button>
         <div id="status" class="status-text"></div>
 
         <div id="previewContainer" class="preview-box">
           <img id="gifOutput" alt="Generated GIF">
-          <a id="downloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="zippagif_pro_output.gif">Download GIF</a>
+          <a id="downloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="zippagif_pro_merged.gif">Download Merged GIF</a>
         </div>
       </div>
 
@@ -504,54 +440,11 @@
 
         <div id="docPanel" style="display: none;">
           <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700); margin-bottom:14px;">Selected: -</div>
-          
-          <div class="field-row">
-            <div class="field">
-              <label for="formatSelect">Target Format</label>
-              <select id="formatSelect">
-                <option value="image/webp">WebP Images</option>
-                <option value="image/jpeg">JPEG Images</option>
-                <option value="image/png">PNG Images</option>
-                <option value="application/pdf">PDF Document</option>
-              </select>
-            </div>
-            <div class="badge-group" style="margin-bottom: 16px;">
-              <span class="badge badge-neutral">Original Total: <span id="origSize">0 KB</span></span>
-              <span class="badge badge-brand">Est. Total: <span id="estSize">0 KB</span></span>
-            </div>
-          </div>
-
-          <div class="field" id="webpModeContainer">
-            <label for="webpModeSelect">WebP Compression Mode</label>
-            <select id="webpModeSelect">
-              <option value="lossy">Lossy (Maximum file size reduction)</option>
-              <option value="lossless">Lossless (Preserve exact pixel data)</option>
-            </select>
-          </div>
-
-          <div class="field" id="qualityField">
-            <div class="slider-meta">
-              <span>Quality Compression</span>
-              <span id="qualityVal">85%</span>
-            </div>
-            <input type="range" id="qualitySlider" min="10" max="100" value="85">
-          </div>
-
-          <div class="field">
-            <div class="slider-meta">
-              <span>Resolution / Export Scale</span>
-              <span id="scaleVal">100%</span>
-            </div>
-            <input type="range" id="scaleSlider" min="20" max="300" value="100">
-          </div>
-
           <button id="convertDocBtn" class="btn-primary" style="margin-top: 12px;">Convert All to Batch ZIP</button>
         </div>
 
         <div id="docStatus" class="status-text"></div>
-
         <div id="docPreviewContainer" class="preview-box">
-          <img id="docOutputImg" alt="Converted Result">
           <a id="docDownloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="converted">Download Result</a>
         </div>
       </div>
@@ -559,7 +452,6 @@
     </div>
   </main>
 
-  <!-- Footer -->
   <footer>
     <div>© 2026 ZippaGif Pro. Fully client-side software.</div>
     <div class="footer-links">
@@ -572,98 +464,8 @@
   <canvas id="hiddenCanvas" style="display:none;"></canvas>
 
   <script>
-    /* Service Worker */
-    const offlineStatusText = document.getElementById('offlineStatusText');
-    const offlineBadge = document.getElementById('offlineBadge');
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', async () => {
-        try {
-          const swCode = `
-            const CACHE_NAME = 'zippagif-pro-v1';
-            const ASSETS = [
-              'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-              'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js',
-              'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
-              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
-              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
-              'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-              'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-              'https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js'
-            ];
-
-            self.addEventListener('install', (e) => {
-              e.waitUntil(
-                caches.open(CACHE_NAME).then((cache) => {
-                  return cache.addAll(ASSETS).catch(() => {});
-                }).then(() => self.skipWaiting())
-              );
-            });
-
-            self.addEventListener('activate', (e) => {
-              e.waitUntil(
-                caches.keys().then((keys) => {
-                  return Promise.all(
-                    keys.map((k) => {
-                      if (k !== CACHE_NAME) return caches.delete(k);
-                    })
-                  );
-                }).then(() => self.clients.claim())
-              );
-            });
-
-            self.addEventListener('fetch', (e) => {
-              e.respondWith(
-                caches.match(e.request).then((cached) => {
-                  if (cached) return cached;
-                  return fetch(e.request).then((resp) => {
-                    if (resp && resp.status === 200 && e.request.method === 'GET') {
-                      const clone = resp.clone();
-                      caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
-                    }
-                    return resp;
-                  }).catch(() => cached);
-                })
-              );
-            });
-          `;
-
-          const swBlob = new Blob([swCode], { type: 'application/javascript' });
-          const swUrl = URL.createObjectURL(swBlob);
-          await navigator.serviceWorker.register(swUrl);
-          
-          offlineStatusText.textContent = 'Offline Ready';
-          offlineBadge.style.background = '#ecfdf5';
-          offlineBadge.style.color = '#065f46';
-          offlineBadge.querySelector('.offline-dot').style.background = '#10b981';
-        } catch (err) {
-          offlineStatusText.textContent = 'Online Mode';
-        }
-      });
-    }
-
-    function switchTab(type) {
-      const tabVideoBtn = document.getElementById('tabVideoBtn');
-      const tabDocBtn = document.getElementById('tabDocBtn');
-      const viewVideo = document.getElementById('viewVideo');
-      const viewDoc = document.getElementById('viewDoc');
-
-      if (type === 'video') {
-        tabVideoBtn.classList.add('active');
-        tabDocBtn.classList.remove('active');
-        viewVideo.style.display = 'block';
-        viewDoc.style.display = 'none';
-      } else {
-        tabDocBtn.classList.add('active');
-        tabVideoBtn.classList.remove('active');
-        viewDoc.style.display = 'block';
-        viewVideo.style.display = 'none';
-      }
-    }
-
-    /* Section 1: Video to GIF Engine */
-    let MAX_GIF_DURATION = 120.0;
-    const TARGET_FPS = 12;
+    const MAX_FRAMES = 300;
+    const MAX_DIMENSION = 480;
 
     const videoInput = document.getElementById('videoInput');
     const videoDropzone = document.getElementById('videoDropzone');
@@ -672,32 +474,42 @@
     const statusIndicator = document.getElementById('statusIndicator');
     const frameBudgetLabel = document.getElementById('frameBudgetLabel');
     const meterFill = document.getElementById('meterFill');
+    const fpsField = document.getElementById('fpsField');
+    const fpsSlider = document.getElementById('fpsSlider');
+    const fpsVal = document.getElementById('fpsVal');
     const convertBtn = document.getElementById('convertBtn');
     const status = document.getElementById('status');
     const hiddenCanvas = document.getElementById('hiddenCanvas');
     const previewContainer = document.getElementById('previewContainer');
     const gifOutput = document.getElementById('gifOutput');
     const downloadLink = document.getElementById('downloadLink');
-    
-    const proVideoControls = document.getElementById('proVideoControls');
-    const gifResSelect = document.getElementById('gifResSelect');
-    const durationGatingSlider = document.getElementById('durationGatingSlider');
-    const durationGatingVal = document.getElementById('durationGatingVal');
 
     let clips = [];
+
+    function calculateTargetDimensions(videoWidth, videoHeight, maxBound = 480) {
+      let targetWidth, targetHeight;
+      if (videoWidth >= videoHeight) {
+        targetWidth = Math.min(videoWidth, maxBound);
+        targetHeight = Math.round((targetWidth / videoWidth) * videoHeight);
+      } else {
+        targetHeight = Math.min(videoHeight, maxBound);
+        targetWidth = Math.round((targetHeight / videoHeight) * videoWidth);
+      }
+      return { targetWidth, targetHeight };
+    }
 
     videoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       if (clips.length >= 10) {
-        status.textContent = 'Maximum of 10 clips reached for Pro tier.';
+        status.textContent = 'Maximum sequence limit of 10 clips reached.';
         videoInput.value = '';
         return;
       }
 
       status.textContent = `Loading clip ${clips.length + 1}...`;
-      
+
       try {
         const url = URL.createObjectURL(file);
         const video = document.createElement('video');
@@ -715,42 +527,42 @@
           id: 'clip-' + Date.now(),
           file, url, video,
           duration: video.duration,
-          startPct: 0, 
-          endPct: Math.min(1, 5 / video.duration) 
+          startPct: 0,
+          endPct: Math.min(1, 4 / video.duration)
         };
 
         clips.push(clip);
         renderClipCard(clip);
         updateUiState();
-        videoInput.value = ''; 
+        videoInput.value = '';
       } catch (err) {
         status.textContent = 'Error loading video: ' + err.message;
       }
     });
-    
-    durationGatingSlider.addEventListener('input', () => {
-      MAX_GIF_DURATION = parseFloat(durationGatingSlider.value);
-      durationGatingVal.textContent = MAX_GIF_DURATION.toFixed(1) + ' sec';
+
+    fpsSlider.addEventListener('input', () => {
+      const fps = parseInt(fpsSlider.value, 10);
+      const maxSec = (MAX_FRAMES / fps).toFixed(1);
+      fpsVal.textContent = `${fps} FPS (${maxSec} sec max)`;
       updateBudgetMeter();
     });
 
     function updateUiState() {
       if (clips.length > 0) {
         meterPanel.style.display = 'flex';
-        proVideoControls.style.display = 'flex';
+        fpsField.style.display = 'block';
         convertBtn.disabled = false;
-        status.textContent = `${clips.length} clip(s) loaded. Arrange and trim.`;
-        
+        status.textContent = `${clips.length} clip(s) queued. Drag headers to reorder sequence.`;
         if (clips.length >= 10) {
           videoDropzone.style.opacity = '0.5';
-          videoDropzone.querySelector('.dropzone-label').textContent = 'Clip slots full (Max 10)';
+          videoDropzone.querySelector('.dropzone-label').textContent = 'Clip sequence full (Max 10)';
         } else {
           videoDropzone.style.opacity = '1';
-          videoDropzone.querySelector('.dropzone-label').textContent = 'Drop next video file, or browse';
+          videoDropzone.querySelector('.dropzone-label').textContent = 'Drop next video file to append sequence';
         }
       } else {
         meterPanel.style.display = 'none';
-        proVideoControls.style.display = 'none';
+        fpsField.style.display = 'none';
         convertBtn.disabled = true;
       }
       updateBudgetMeter();
@@ -777,8 +589,8 @@
       `;
 
       clipList.appendChild(card);
-      setupDragAndDropReordering(card);
-      setupOptimizedTrimmer(card, clip);
+      setupDragAndDrop(card);
+      setupTrimmer(card, clip);
       generateFilmstrip(card, clip);
     }
 
@@ -800,27 +612,23 @@
       }
     }
 
-    function setupOptimizedTrimmer(card, clip) {
+    function setupTrimmer(card, clip) {
       const container = card.querySelector('.filmstrip-container');
       const overlay = card.querySelector('.trimmer-overlay');
       const handleL = card.querySelector('.handle-left');
       const handleR = card.querySelector('.handle-right');
       const timeInfo = card.querySelector('.clip-time-info');
 
-      let activeInteraction = null;
-      let startX = 0;
-      let startStartPct = 0;
-      let startEndPct = 1;
+      let active = null;
+      let startX = 0, startStartPct = 0, startEndPct = 1;
 
       const onMouseDown = (e, type) => {
-        e.preventDefault(); 
+        e.preventDefault();
         e.stopPropagation();
-
-        activeInteraction = type;
+        active = type;
         startX = e.clientX;
         startStartPct = clip.startPct;
         startEndPct = clip.endPct;
-        overlay.style.transition = 'none';
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
@@ -834,134 +642,106 @@
       });
 
       function onMouseMove(e) {
-        if (!activeInteraction) return;
-
+        if (!active) return;
         const rect = container.getBoundingClientRect();
-        const deltaPct = (e.clientX - startX) / rect.width;
-        const minWindowPct = 0.05;
+        const delta = (e.clientX - startX) / rect.width;
+        const minWindow = 0.02;
 
-        if (activeInteraction === 'left') {
-          let newStart = startStartPct + deltaPct;
-          newStart = Math.max(0, Math.min(newStart, clip.endPct - minWindowPct));
-          clip.startPct = newStart;
-        } else if (activeInteraction === 'right') {
-          let newEnd = startEndPct + deltaPct;
-          newEnd = Math.min(1, Math.max(newEnd, clip.startPct + minWindowPct));
-          clip.endPct = newEnd;
-        } else if (activeInteraction === 'move') {
-          const windowWidth = startEndPct - startStartPct;
-          let newStart = startStartPct + deltaPct;
-          let newEnd = startEndPct + deltaPct;
-
-          if (newStart < 0) { newStart = 0; newEnd = windowWidth; }
-          else if (newEnd > 1) { newEnd = 1; newStart = 1 - windowWidth; }
-          clip.startPct = newStart;
-          clip.endPct = newEnd;
+        if (active === 'left') {
+          clip.startPct = Math.max(0, Math.min(startStartPct + delta, clip.endPct - minWindow));
+        } else if (active === 'right') {
+          clip.endPct = Math.min(1, Math.max(startEndPct + delta, clip.startPct + minWindow));
+        } else if (active === 'move') {
+          const w = startEndPct - startStartPct;
+          let ns = startStartPct + delta;
+          let ne = startEndPct + delta;
+          if (ns < 0) { ns = 0; ne = w; }
+          else if (ne > 1) { ne = 1; ns = 1 - w; }
+          clip.startPct = ns;
+          clip.endPct = ne;
         }
 
-        updateTrimmerUi();
+        overlay.style.left = (clip.startPct * 100) + '%';
+        overlay.style.width = ((clip.endPct - clip.startPct) * 100) + '%';
+        timeInfo.textContent = `${(clip.startPct * clip.duration).toFixed(1)} sec - ${(clip.endPct * clip.duration).toFixed(1)} sec`;
         updateBudgetMeter();
       }
 
       function onMouseUp() {
-        if (!activeInteraction) return;
-        activeInteraction = null;
-        overlay.style.transition = '';
+        active = null;
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
       }
 
-      function updateTrimmerUi() {
-        const leftCoord = clip.startPct * 100;
-        const widthCoord = (clip.endPct - clip.startPct) * 100;
-        overlay.style.left = leftCoord + '%';
-        overlay.style.width = widthCoord + '%';
-        
-        const startTime = (clip.startPct * clip.duration).toFixed(1);
-        const endTime = (clip.endPct * clip.duration).toFixed(1);
-        timeInfo.textContent = `${startTime} sec - ${endTime} sec`;
-      }
-
-      updateTrimmerUi();
+      overlay.style.left = (clip.startPct * 100) + '%';
+      overlay.style.width = ((clip.endPct - clip.startPct) * 100) + '%';
     }
 
-    function setupDragAndDropReordering(card) {
+    function setupDragAndDrop(card) {
       const header = card.querySelector('.clip-header');
       header.addEventListener('mousedown', () => { card.draggable = true; });
 
       card.addEventListener('dragstart', (e) => {
         card.classList.add('dragging');
         e.dataTransfer.setData('text/plain', card.dataset.id);
-        e.dataTransfer.setDragImage(card, 20, 20);
       });
 
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
-        reorderClipsArrayInState();
+        const cardElements = [...clipList.querySelectorAll('.clip-card')];
+        clips = cardElements.map(el => clips.find(c => c.id === el.dataset.id));
+        status.textContent = 'Sequence order updated.';
       });
 
       clipList.addEventListener('dragover', (e) => {
         e.preventDefault();
         const draggingCard = document.querySelector('.clip-card.dragging');
         if (!draggingCard) return;
-
         const siblings = [...clipList.querySelectorAll('.clip-card:not(.dragging)')];
-        let nextSibling = siblings.find(sibling => {
-          return e.clientY <= sibling.getBoundingClientRect().top + sibling.offsetHeight / 2;
-        });
-
-        if (nextSibling) {
-          clipList.insertBefore(draggingCard, nextSibling);
-        } else {
-          clipList.appendChild(draggingCard);
-        }
+        let nextSibling = siblings.find(sibling => e.clientY <= sibling.getBoundingClientRect().top + sibling.offsetHeight / 2);
+        if (nextSibling) clipList.insertBefore(draggingCard, nextSibling);
+        else clipList.appendChild(draggingCard);
       });
     }
 
-    function reorderClipsArrayInState() {
-      const cardElements = [...clipList.querySelectorAll('.clip-card')];
-      clips = cardElements.map(el => clips.find(c => c.id === el.dataset.id));
-      status.textContent = 'Clip order updated.';
-    }
-
     function updateBudgetMeter() {
-      if (clips.length === 0) return;
-
+      if (!clips.length) return;
+      const fps = parseInt(fpsSlider.value, 10);
       let totalSelectedSeconds = 0;
       clips.forEach(clip => {
         totalSelectedSeconds += (clip.endPct - clip.startPct) * clip.duration;
       });
 
-      const percentageOfBudget = Math.min(100, Math.round((totalSelectedSeconds / MAX_GIF_DURATION) * 100));
+      const totalFrames = Math.round(totalSelectedSeconds * fps);
+      const pct = Math.min(100, Math.round((totalFrames / MAX_FRAMES) * 100));
 
-      frameBudgetLabel.textContent = `${totalSelectedSeconds.toFixed(1)} sec / ${MAX_GIF_DURATION.toFixed(1)} sec total`;
-      meterFill.style.width = `${percentageOfBudget}%`;
+      frameBudgetLabel.textContent = `${totalFrames} / ${MAX_FRAMES} frames (${totalSelectedSeconds.toFixed(1)} sec total)`;
+      meterFill.style.width = `${pct}%`;
 
-      if (totalSelectedSeconds <= MAX_GIF_DURATION) {
+      if (totalFrames <= MAX_FRAMES) {
         statusIndicator.classList.remove('exceeded');
         meterFill.style.backgroundColor = 'var(--indigo-accent)';
         convertBtn.disabled = false;
         if (!convertBtn.disabled && !convertBtn.textContent.includes('Generating')) {
-          status.textContent = 'Ready to convert.';
+          status.textContent = 'Ready to convert sequence.';
         }
       } else {
         statusIndicator.classList.add('exceeded');
         meterFill.style.backgroundColor = '#dc2626';
         convertBtn.disabled = true;
-        status.textContent = `Total selection (${totalSelectedSeconds.toFixed(1)} sec) exceeds limit of ${MAX_GIF_DURATION.toFixed(1)} sec. Trim clips.`;
+        status.textContent = `Total sequence (${totalFrames} frames) exceeds Pro budget of ${MAX_FRAMES} frames. Trim clips or lower FPS.`;
       }
     }
 
     convertBtn.addEventListener('click', async () => {
       convertBtn.disabled = true;
-      const targetHeight = parseInt(gifResSelect.value, 10);
-      convertBtn.textContent = `Generating ${targetHeight}p GIF...`;
-      status.textContent = 'Processing frames in worker thread...';
+      convertBtn.textContent = 'Merging & Generating GIF...';
+      status.textContent = 'Processing multi-clip sequence in worker...';
       previewContainer.style.display = 'none';
 
+      const fps = parseInt(fpsSlider.value, 10);
       const firstVideo = clips[0].video;
-      const aspectRatio = firstVideo.videoWidth / firstVideo.videoHeight;
-      const targetWidth = Math.round(targetHeight * aspectRatio);
+      const { targetWidth, targetHeight } = calculateTargetDimensions(firstVideo.videoWidth, firstVideo.videoHeight, MAX_DIMENSION);
 
       hiddenCanvas.width = targetWidth;
       hiddenCanvas.height = targetHeight;
@@ -972,318 +752,56 @@
 
       const gif = new GIF({
         workers: 4,
-        quality: 8,
+        quality: 10,
         width: targetWidth,
         height: targetHeight,
         workerScript: workerUrl
       });
 
-      const stepTime = 1 / TARGET_FPS;
+      const stepTime = 1 / fps;
 
       for (let i = 0; i < clips.length; i++) {
         const clip = clips[i];
-        const startTimeReal = clip.startPct * clip.duration;
-        const endTimeReal = clip.endPct * clip.duration;
-        
+        const startTime = clip.startPct * clip.duration;
+        const endTime = clip.endPct * clip.duration;
         status.textContent = `Extracting frames from Clip ${i+1} of ${clips.length}...`;
 
-        let currentTime = startTimeReal;
-        while (currentTime < endTimeReal && currentTime < clip.duration) {
+        let currentTime = startTime;
+        while (currentTime < endTime && currentTime < clip.duration) {
           clip.video.currentTime = currentTime;
-          
-          await new Promise((resolve) => {
-            const onSeeked = () => {
-              clip.video.removeEventListener('seeked', onSeeked);
-              resolve();
-            };
-            clip.video.addEventListener('seeked', onSeeked);
-            setTimeout(onSeeked, 500); 
+          await new Promise(r => {
+            const onSeek = () => { clip.video.removeEventListener('seeked', onSeek); r(); };
+            clip.video.addEventListener('seeked', onSeek);
+            setTimeout(onSeek, 400);
           });
 
           ctx.drawImage(clip.video, 0, 0, targetWidth, targetHeight);
-          gif.addFrame(ctx, { copy: true, delay: Math.round(1000 / TARGET_FPS) });
+          gif.addFrame(ctx, { copy: true, delay: Math.round(1000 / fps) });
           currentTime += stepTime;
         }
       }
 
-      status.textContent = 'Encoding Pro GIF with NeuQuant quantization...';
-      
+      status.textContent = 'Encoding Pro GIF...';
       gif.on('finished', (blob) => {
         const gifUrl = URL.createObjectURL(blob);
         gifOutput.src = gifUrl;
         downloadLink.href = gifUrl;
         previewContainer.style.display = 'block';
-        status.textContent = `Pro Conversion complete! (${clips.length} clips merged, ${targetHeight}p HD, ${TARGET_FPS}fps).`;
+        status.textContent = `Pro Conversion complete! (${clips.length} clips merged, ${targetWidth}x${targetHeight}px, ${fps} FPS).`;
         convertBtn.disabled = false;
-        convertBtn.textContent = 'Generate Pro GIF';
+        convertBtn.textContent = 'Merge & Generate Pro GIF';
         URL.revokeObjectURL(workerUrl);
-        updateBudgetMeter();
       });
 
       gif.render();
     });
 
-    /* Section 2: Document & Batch Image Suite (Pro 500-File Batch Queue) */
-    const docInput = document.getElementById('docInput');
-    const docPanel = document.getElementById('docPanel');
-    const selectedFileName = document.getElementById('selectedFileName');
-    const formatSelect = document.getElementById('formatSelect');
-    const webpModeContainer = document.getElementById('webpModeContainer');
-    const webpModeSelect = document.getElementById('webpModeSelect');
-    const qualityField = document.getElementById('qualityField');
-    const qualitySlider = document.getElementById('qualitySlider');
-    const scaleSlider = document.getElementById('scaleSlider');
-    const qualityVal = document.getElementById('qualityVal');
-    const scaleVal = document.getElementById('scaleVal');
-    const origSize = document.getElementById('origSize');
-    const estSize = document.getElementById('estSize');
-    const convertDocBtn = document.getElementById('convertDocBtn');
-    const docStatus = document.getElementById('docStatus');
-    const docPreviewContainer = document.getElementById('docPreviewContainer');
-    const docOutputImg = document.getElementById('docOutputImg');
-    const docDownloadLink = document.getElementById('docDownloadLink');
-
-    let batchQueue = [];
-
-    docInput.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files).slice(0, 500);
-      if (!files.length) return;
-
-      batchQueue = [];
-      let totalBytes = 0;
-      docStatus.textContent = `Queuing ${files.length} file(s)...`;
-      docPanel.style.display = 'block';
-      docPreviewContainer.style.display = 'none';
-
-      for (let f = 0; f < files.length; f++) {
-        const file = files[f];
-        totalBytes += file.size;
-        const ext = file.name.split('.').pop().toLowerCase();
-
-        try {
-          if (file.type === 'application/pdf') {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            for (let p = 1; p <= pdf.numPages; p++) {
-              const page = await pdf.getPage(p);
-              batchQueue.push({
-                name: `${file.name.replace(/\.[^/.]+$/, "")}_page_${p}`,
-                type: 'pdf-page',
-                data: page
-              });
-            }
-          } else if (ext === 'tiff' || ext === 'tif') {
-            const arrayBuffer = await file.arrayBuffer();
-            const ifds = UTIF.decode(arrayBuffer);
-            for (let i = 0; i < ifds.length; i++) {
-              UTIF.decodeImage(arrayBuffer, ifds[i]);
-              const rgba = UTIF.toRGBA8(ifds[i]);
-              const canvas = document.createElement('canvas');
-              canvas.width = ifds[i].width;
-              canvas.height = ifds[i].height;
-              const ctx = canvas.getContext('2d');
-              const imgData = ctx.createImageData(canvas.width, canvas.height);
-              imgData.data.set(rgba);
-              ctx.putImageData(imgData, 0, 0);
-
-              batchQueue.push({
-                name: `${file.name.replace(/\.[^/.]+$/, "")}_frame_${i + 1}`,
-                type: 'canvas',
-                data: canvas
-              });
-            }
-          } else {
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            await new Promise(r => img.onload = r);
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-
-            batchQueue.push({
-              name: file.name.replace(/\.[^/.]+$/, ""),
-              type: 'canvas',
-              data: canvas
-            });
-          }
-        } catch (err) {
-          console.error("Error parsing file in batch:", file.name, err);
-        }
-      }
-
-      selectedFileName.textContent = `Batch Ready: ${files.length} file(s) loaded (${batchQueue.length} total render frames).`;
-      origSize.textContent = formatBytes(totalBytes);
-      convertDocBtn.textContent = batchQueue.length > 1 ? `Convert All ${batchQueue.length} Frames (ZIP)` : `Convert Image`;
-      docStatus.textContent = 'Batch loaded. Set resolution and compression below.';
-
-      updateFormatControls();
-      estimateOutputSize();
-    });
-
-    function updateFormatControls() {
-      const isWebP = formatSelect.value === 'image/webp';
-      webpModeContainer.style.display = isWebP ? 'block' : 'none';
-
-      if (isWebP && webpModeSelect.value === 'lossless') {
-        qualityField.style.display = 'none';
-      } else if (formatSelect.value === 'image/png') {
-        qualityField.style.display = 'none';
-      } else {
-        qualityField.style.display = 'block';
-      }
+    function switchTab(type) {
+      document.getElementById('tabVideoBtn').classList.toggle('active', type === 'video');
+      document.getElementById('tabDocBtn').classList.toggle('active', type === 'doc');
+      document.getElementById('viewVideo').style.display = type === 'video' ? 'block' : 'none';
+      document.getElementById('viewDoc').style.display = type === 'doc' ? 'block' : 'none';
     }
-
-    function formatBytes(bytes) {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    async function renderBatchItemToCanvas(item, exportScale) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d', { alpha: true });
-
-      if (item.type === 'pdf-page') {
-        const SUPERSAMPLE_RATIO = 2.0;
-        const totalScale = exportScale * SUPERSAMPLE_RATIO;
-        const viewport = item.data.getViewport({ scale: totalScale });
-
-        const supersampledCanvas = document.createElement('canvas');
-        supersampledCanvas.width = viewport.width;
-        supersampledCanvas.height = viewport.height;
-        const sCtx = supersampledCanvas.getContext('2d');
-
-        await item.data.render({ canvasContext: sCtx, viewport }).promise;
-
-        canvas.width = Math.round(viewport.width / SUPERSAMPLE_RATIO);
-        canvas.height = Math.round(viewport.height / SUPERSAMPLE_RATIO);
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(supersampledCanvas, 0, 0, canvas.width, canvas.height);
-      } else {
-        canvas.width = Math.round(item.data.width * exportScale);
-        canvas.height = Math.round(item.data.height * exportScale);
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(item.data, 0, 0, canvas.width, canvas.height);
-      }
-
-      return canvas;
-    }
-
-    async function estimateOutputSize() {
-      qualityVal.textContent = `${qualitySlider.value}%`;
-      scaleVal.textContent = `${scaleSlider.value}%`;
-
-      if (!batchQueue.length) return;
-
-      const scale = parseFloat(scaleSlider.value) / 100;
-      const targetFormat = formatSelect.value;
-      const isWebPLossless = targetFormat === 'image/webp' && webpModeSelect.value === 'lossless';
-      const quality = isWebPLossless ? 1.0 : parseFloat(qualitySlider.value) / 100;
-
-      const sampleCanvas = await renderBatchItemToCanvas(batchQueue[0], scale);
-
-      if (targetFormat === 'application/pdf') {
-        const baseSize = sampleCanvas.width * sampleCanvas.height * 0.18 * quality * batchQueue.length;
-        estSize.textContent = formatBytes(baseSize);
-      } else {
-        sampleCanvas.toBlob((blob) => {
-          if (blob) {
-            estSize.textContent = formatBytes(blob.size * batchQueue.length);
-          }
-        }, targetFormat, quality);
-      }
-    }
-
-    qualitySlider.addEventListener('input', estimateOutputSize);
-    scaleSlider.addEventListener('input', estimateOutputSize);
-    formatSelect.addEventListener('change', () => {
-      updateFormatControls();
-      estimateOutputSize();
-    });
-    webpModeSelect.addEventListener('change', () => {
-      updateFormatControls();
-      estimateOutputSize();
-    });
-
-    convertDocBtn.addEventListener('click', async () => {
-      if (!batchQueue.length) return;
-      convertDocBtn.disabled = true;
-      docStatus.textContent = 'Processing multi-file batch...';
-      docPreviewContainer.style.display = 'none';
-
-      const scale = parseFloat(scaleSlider.value) / 100;
-      const targetFormat = formatSelect.value;
-      const isWebPLossless = targetFormat === 'image/webp' && webpModeSelect.value === 'lossless';
-      const quality = isWebPLossless ? 1.0 : parseFloat(qualitySlider.value) / 100;
-      const ext = targetFormat === 'application/pdf' ? 'pdf' : targetFormat.split('/')[1];
-
-      if (targetFormat === 'application/pdf') {
-        const { jsPDF } = window.jspdf;
-        let pdfDocOut = null;
-
-        for (let i = 0; i < batchQueue.length; i++) {
-          docStatus.textContent = `Adding item ${i + 1} of ${batchQueue.length} to PDF...`;
-          const canvas = await renderBatchItemToCanvas(batchQueue[i], scale);
-          const imgData = canvas.toDataURL('image/jpeg', quality);
-          const orientation = canvas.width > canvas.height ? 'l' : 'p';
-
-          if (i === 0) {
-            pdfDocOut = new jsPDF(orientation, 'px', [canvas.width, canvas.height]);
-            pdfDocOut.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-          } else {
-            pdfDocOut.addPage([canvas.width, canvas.height], orientation);
-            pdfDocOut.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-          }
-        }
-
-        const pdfBlob = pdfDocOut.output('blob');
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        docOutputImg.style.display = 'none';
-        docDownloadLink.href = pdfUrl;
-        docDownloadLink.download = 'zippagif_pro_batch_combined.pdf';
-        docDownloadLink.textContent = 'Download Combined PDF';
-        docPreviewContainer.style.display = 'block';
-        docStatus.textContent = `All ${batchQueue.length} items merged into PDF!`;
-      } else if (batchQueue.length === 1) {
-        const canvas = await renderBatchItemToCanvas(batchQueue[0], scale);
-        canvas.toBlob((blob) => {
-          const url = URL.createObjectURL(blob);
-          docOutputImg.src = url;
-          docOutputImg.style.display = 'block';
-          docDownloadLink.href = url;
-          docDownloadLink.download = `${batchQueue[0].name}.${ext}`;
-          docDownloadLink.textContent = `Download ${ext.toUpperCase()}`;
-          docPreviewContainer.style.display = 'block';
-          docStatus.textContent = 'Conversion complete.';
-        }, targetFormat, quality);
-      } else {
-        const zip = new JSZip();
-        for (let i = 0; i < batchQueue.length; i++) {
-          docStatus.textContent = `Encoding frame ${i + 1} of ${batchQueue.length}...`;
-          const canvas = await renderBatchItemToCanvas(batchQueue[i], scale);
-          const blob = await new Promise(r => canvas.toBlob(r, targetFormat, quality));
-          zip.file(`${batchQueue[i].name}.${ext}`, blob);
-        }
-
-        docStatus.textContent = `Zipping ${batchQueue.length} optimized files...`;
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const zipUrl = URL.createObjectURL(zipBlob);
-        docOutputImg.style.display = 'none';
-        docDownloadLink.href = zipUrl;
-        docDownloadLink.download = `zippagif_pro_batch_${ext}.zip`;
-        docDownloadLink.textContent = `Download All ${batchQueue.length} Files (ZIP)`;
-        docPreviewContainer.style.display = 'block';
-        docStatus.textContent = `Batch conversion finished: ${batchQueue.length} files bundled into ZIP.`;
-      }
-
-      convertDocBtn.disabled = false;
-    });
   </script>
 </body>
 </html>
