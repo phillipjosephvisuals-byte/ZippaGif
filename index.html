@@ -130,7 +130,7 @@
     .hero p { font-size: 1.1rem; color: var(--slate-500); }
 
     .tool-wrapper {
-      max-width: 780px;
+      max-width: 840px;
       width: 100%;
       margin: 0 auto 64px;
       padding: 0 16px;
@@ -321,7 +321,109 @@
       margin-bottom: 6px;
     }
     
-    /* Cross-browser 7-segment slider styling */
+    /* Document Combiner / Binder Visual Deck */
+    .doc-combiner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .doc-thumb-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .doc-thumb-card:hover {
+      border-color: var(--indigo-accent);
+      transform: translateY(-2px);
+    }
+    .doc-thumb-icon {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+      color: var(--indigo-primary);
+    }
+    .doc-thumb-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--slate-900);
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .doc-thumb-meta {
+      font-size: 0.68rem;
+      color: var(--slate-500);
+    }
+    .doc-thumb-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(203, 213, 225, 0.6);
+      border: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--slate-700);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .doc-thumb-remove:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    /* Placeholder "Add More" Tile */
+    .doc-add-placeholder {
+      border: 2px dashed rgba(99, 102, 241, 0.4);
+      background: rgba(224, 231, 255, 0.25);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      min-height: 110px;
+      transition: all 0.2s ease;
+    }
+    .doc-add-placeholder:hover {
+      background: rgba(224, 231, 255, 0.5);
+      border-color: var(--indigo-primary);
+    }
+    .doc-add-placeholder input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .doc-add-icon {
+      font-size: 1.5rem;
+      color: var(--indigo-primary);
+      margin-bottom: 4px;
+    }
+    .doc-add-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--indigo-primary);
+    }
+
+    /* Range slider styling */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -357,7 +459,6 @@
       box-shadow: 0 2px 6px rgba(67, 56, 202, 0.4);
     }
 
-    /* 7-Segment Button Grid */
     .preset-btn-group-7 {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -385,7 +486,6 @@
       color: var(--indigo-primary);
     }
 
-    /* Calibrated Live Size Box */
     .size-estimate-box {
       background: rgba(241, 245, 249, 0.85);
       border: 1px solid var(--slate-200);
@@ -707,7 +807,7 @@
       🔒 100% Client-Side Engine • Zero Cloud Uploads
     </div>
     <h1>Professional File Conversion.<br>Zero Cloud Uploads.</h1>
-    <p>Convert video clips to lightweight GIFs or batch-compress documents and Word (.docx) files locally.</p>
+    <p>Convert video clips to lightweight GIFs, combine multiple files into master PDFs, and compress documents locally.</p>
   </header>
 
   <!-- Core Tool Section -->
@@ -715,7 +815,7 @@
     <div class="glass-card">
       <div class="tool-tabs">
         <button class="tab-btn active" id="tabVideoBtn" onclick="switchTab('video')">Video to GIF</button>
-        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document & Image Suite</button>
+        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document & File Binder</button>
       </div>
 
       <!-- VIEW 1: VIDEO TO GIF -->
@@ -762,40 +862,45 @@
         </div>
       </div>
 
-      <!-- VIEW 2: DOCUMENT & BATCH IMAGE SUITE (CALIBRATED 7-LEVEL ENGINE) -->
+      <!-- VIEW 2: DOCUMENT & MULTI-FILE COMBINER SUITE -->
       <div id="viewDoc" style="display: none;">
         
         <div class="doc-guidance-pill">
           <span>ℹ️</span>
-          <span><strong>Format Notice:</strong> Shrinks bloated PDFs, scans, and contracts directly on your device. Choose from 7 precision compression stages below.</span>
+          <span><strong>Multi-File Combiner:</strong> Merge PDFs, images, scans, and Word files into a single master document or compress queues locally on your CPU.</span>
         </div>
 
         <div class="dropzone" id="docDropzone">
           <input type="file" id="docInput" accept=".pdf, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*, .tiff, .tif" multiple>
-          <div class="dropzone-label">Drop files here, or browse (Up to 50 files)</div>
-          <div class="dropzone-sub">Supports Word (.docx), .pdf, batch .jpg, .png, .webp, and multi-page .tiff</div>
+          <div class="dropzone-label">Drop files here to combine or compress, or browse</div>
+          <div class="dropzone-sub">Supports .pdf, Word (.docx), .jpg, .png, .webp, and .tiff (Up to 50 files on Starter)</div>
         </div>
 
         <div id="docPanel" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700);">Selected: -</div>
-            <button class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="resetDocUpload()">Change Files</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700);">File Queue</div>
+            <button class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="resetDocUpload()">Clear All</button>
+          </div>
+
+          <!-- DYNAMIC DOCUMENT TILES & PLACEHOLDER ADDER -->
+          <div class="doc-combiner-grid" id="docCombinerGrid">
+            <!-- Dynamic Tiles Render Here -->
           </div>
           
           <div class="field">
-            <label for="formatSelect">Target Format</label>
+            <label for="formatSelect">Export Mode</label>
             <select id="formatSelect">
-              <option value="application/pdf">PDF Document (Compressed / Merged)</option>
-              <option value="image/webp">WebP Images (High Compression)</option>
-              <option value="image/jpeg">JPEG Images (Standard)</option>
-              <option value="image/png">PNG Images (Lossless)</option>
+              <option value="application/pdf">Merge into 1 Master Combined PDF</option>
+              <option value="image/webp">Separate WebP Images (.zip)</option>
+              <option value="image/jpeg">Separate JPEG Images (.zip)</option>
+              <option value="image/png">Separate PNG Images (.zip)</option>
             </select>
           </div>
 
           <!-- 7-LEVEL COMPRESSION CONTROL -->
           <div class="field" style="margin-top: 18px;">
             <div class="slider-meta">
-              <label for="compressionSlider">Compression & Fidelity Target</label>
+              <label for="compressionSlider">Target Output Size & Quality</label>
               <span id="compressionLabel" style="color: var(--indigo-primary); font-weight: 700;">4. Balanced</span>
             </div>
             
@@ -811,14 +916,14 @@
               <button type="button" class="preset-btn-7" id="btnPreset7" onclick="setCompressionLevel(7)">7. Pristine</button>
             </div>
 
-            <!-- Real-Time Calibrated Size Estimate -->
+            <!-- Calibrated Live Size Box -->
             <div class="size-estimate-box">
-              <span>Original Source: <strong id="origSizeText">0.0 MB</strong></span>
+              <span>Queue Size: <strong id="origSizeText">0.0 MB</strong></span>
               <span>Estimated Result: <strong id="estSizeText" class="size-badge">~0.0 MB</strong></span>
             </div>
           </div>
 
-          <button id="convertDocBtn" class="btn-primary" style="margin-top: 14px;">Process & Export Files</button>
+          <button id="convertDocBtn" class="btn-primary" style="margin-top: 14px;">Process & Combine Files</button>
         </div>
 
         <div id="docStatus" class="status-text"></div>
@@ -835,7 +940,7 @@
   <section class="pricing-section" id="pricing">
     <div class="pricing-header">
       <h2>Simple, Transparent Licensing</h2>
-      <p style="color: var(--slate-500); font-size: 0.95rem; margin-top: 4px;">Unlimited speed with direct client processing. Cancel anytime.</p>
+      <p style="color: var(--slate-500); font-size: 0.95rem; margin-top: 4px;">Direct client-side processing with zero server queues. Cancel anytime.</p>
     </div>
 
     <div class="pricing-grid">
@@ -851,9 +956,9 @@
             <li><strong>100-Frame Budget</strong> (10s @ 10 FPS or 20s @ 5 FPS)</li>
             <li>5 to 15 FPS selectable frame rates</li>
             <li><strong>480p Max Resolution</strong> on longest side</li>
-            <li><strong>7-Stage Calibrated Compression Engine</strong></li>
+            <li><strong>7-Stage Compression Engine</strong> with live MB estimates</li>
             <li>Word (.docx) to PDF with Dual Engines</li>
-            <li>Up to 50 Files Document Queue</li>
+            <li><strong>Up to 50 Pages / Files</strong> Combiner Queue</li>
           </ul>
         </div>
         <button class="btn-outline" style="width: 100%;" disabled>Current Active Plan</button>
@@ -868,13 +973,13 @@
           <div class="price-value">$4.99 <span>/ month</span></div>
           <div class="price-suboption">or $29.99 / year (Save 50%)</div>
           <ul class="feature-list">
-            <li><strong>Multi-Clip Sequencing (Up to 10 Clips)</strong></li>
+            <li><strong>Multi-Clip Video Sequencing (Up to 10 Clips)</strong></li>
             <li><strong>300-Frame Budget</strong> (30s @ 10 FPS or 12.5s @ 24 FPS)</li>
             <li>Expanded 5 to 24 FPS Frame Rate range</li>
             <li><strong>480p Max Resolution</strong> on longest side</li>
-            <li>Advanced Multi-Pass Batch Compression</li>
-            <li>Drag & Drop visual timeline rearranging</li>
-            <li>500-File Batch Document Queue</li>
+            <li><strong>Up to 500 Pages / Files Master Combiner</strong></li>
+            <li>Drag & Drop timeline & multi-page reordering</li>
+            <li>Commercial License Clearance</li>
           </ul>
         </div>
         <button class="btn-primary" style="background: #94a3b8; cursor: not-allowed;" disabled>Coming Soon</button>
@@ -1382,12 +1487,13 @@
     });
 
     /* =========================================================
-       SECTION 2: DOCUMENT & BATCH IMAGE COMPRESSION SUITE (7-LEVEL CALIBRATED)
+       SECTION 2: DOCUMENT & MULTI-FILE COMBINER SUITE
        ========================================================= */
     const docDropzone = document.getElementById('docDropzone');
     const docInput = document.getElementById('docInput');
     const docPanel = document.getElementById('docPanel');
     const selectedFileName = document.getElementById('selectedFileName');
+    const docCombinerGrid = document.getElementById('docCombinerGrid');
     const formatSelect = document.getElementById('formatSelect');
     const compressionSlider = document.getElementById('compressionSlider');
     const compressionLabel = document.getElementById('compressionLabel');
@@ -1399,10 +1505,10 @@
     const docOutputImg = document.getElementById('docOutputImg');
     const docDownloadLink = document.getElementById('docDownloadLink');
 
+    let loadedFiles = [];
     let batchQueue = [];
     let totalInputBytes = 0;
 
-    // 7-Level Calibrated Preset Matrix (Tuned to Real-World 100MB PDF Tests)
     const COMPRESSION_PRESETS_7 = {
       1: { scale: 0.50, quality: 0.25, ratio: 0.035, label: "1. Extreme (~96% Reduction / Under 5MB Target)" },
       2: { scale: 0.70, quality: 0.40, ratio: 0.065, label: "2. Ultra Compact (~93% Reduction / Email Friendly)" },
@@ -1423,19 +1529,16 @@
       const preset = COMPRESSION_PRESETS_7[val];
       compressionLabel.textContent = preset.label;
       
-      // Update active state on 7-segment preset buttons
       [1, 2, 3, 4, 5, 6, 7].forEach(i => {
         const btn = document.getElementById(`btnPreset${i}`);
         if (btn) btn.classList.toggle('active', i === val);
       });
 
-      // Update real-time calibrated size indicators
       if (totalInputBytes > 0) {
         const origMb = (totalInputBytes / (1024 * 1024)).toFixed(1);
         origSizeText.textContent = `${origMb} MB`;
 
         let estBytes = totalInputBytes * preset.ratio;
-        // Floor sanity check per page frame
         const minBytesPerPage = [25000, 45000, 75000, 110000, 160000, 240000, 380000][val - 1];
         estBytes = Math.max(estBytes, (batchQueue.length || 1) * minBytesPerPage);
         
@@ -1451,6 +1554,7 @@
     compressionSlider.addEventListener('change', updateCompressionUI);
 
     function resetDocUpload() {
+      loadedFiles = [];
       batchQueue = [];
       totalInputBytes = 0;
       docPanel.style.display = 'none';
@@ -1460,28 +1564,80 @@
       docInput.value = '';
     }
 
-    docInput.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files).slice(0, MAX_DOC_BATCH);
-      if (!files.length) return;
+    function removeFileFromQueue(index) {
+      loadedFiles.splice(index, 1);
+      if (loadedFiles.length === 0) {
+        resetDocUpload();
+        return;
+      }
+      reprocessQueue();
+    }
 
-      if (files.length === 1 && files[0].name.toLowerCase().endsWith('.docx')) {
-        handleDocxUpload(files[0]);
+    function renderCombinerGrid() {
+      docCombinerGrid.innerHTML = '';
+
+      loadedFiles.forEach((file, idx) => {
+        const card = document.createElement('div');
+        card.className = 'doc-thumb-card';
+        
+        let icon = '📄';
+        if (file.name.endsWith('.pdf')) icon = '📕';
+        else if (file.name.endsWith('.docx')) icon = '📘';
+        else if (file.type.startsWith('image/')) icon = '🖼️';
+
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+
+        card.innerHTML = `
+          <button class="doc-thumb-remove" onclick="removeFileFromQueue(${idx})" title="Remove">✕</button>
+          <div class="doc-thumb-icon">${icon}</div>
+          <div class="doc-thumb-name" title="${file.name}">${file.name}</div>
+          <div class="doc-thumb-meta">${sizeMb} MB</div>
+        `;
+        docCombinerGrid.appendChild(card);
+      });
+
+      // Interactive Placeholder "Add More" Tile
+      const addTile = document.createElement('div');
+      addTile.className = 'doc-add-placeholder';
+      addTile.innerHTML = `
+        <input type="file" id="docAppendInput" accept=".pdf, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*, .tiff, .tif" multiple>
+        <div class="doc-add-icon">+</div>
+        <div class="doc-add-text">Add File / Scan</div>
+      `;
+      docCombinerGrid.appendChild(addTile);
+
+      document.getElementById('docAppendInput').addEventListener('change', (e) => {
+        handleIncomingFiles(Array.from(e.target.files));
+      });
+    }
+
+    async function handleIncomingFiles(newFiles) {
+      if (!newFiles.length) return;
+
+      if (loadedFiles.length === 0 && newFiles.length === 1 && newFiles[0].name.toLowerCase().endsWith('.docx')) {
+        handleDocxUpload(newFiles[0]);
         docInput.value = '';
         return;
       }
 
+      loadedFiles = loadedFiles.concat(newFiles).slice(0, MAX_DOC_BATCH);
+      await reprocessQueue();
+    }
+
+    async function reprocessQueue() {
       batchQueue = [];
       totalInputBytes = 0;
-      files.forEach(f => totalInputBytes += f.size);
+      loadedFiles.forEach(f => totalInputBytes += f.size);
 
-      docStatus.textContent = `Queuing ${files.length} file(s)...`;
+      docStatus.textContent = `Preparing ${loadedFiles.length} file(s)...`;
       docDropzone.style.display = 'none';
       docPanel.style.display = 'block';
       docPreviewContainer.style.display = 'none';
-      updateCompressionUI();
 
-      for (let f = 0; f < files.length; f++) {
-        const file = files[f];
+      renderCombinerGrid();
+
+      for (let f = 0; f < loadedFiles.length; f++) {
+        const file = loadedFiles[f];
         const ext = file.name.split('.').pop().toLowerCase();
 
         try {
@@ -1556,17 +1712,25 @@
         }
       }
 
-      selectedFileName.textContent = `Batch: ${files.length} file(s) (${batchQueue.length} page frame${batchQueue.length > 1 ? 's' : ''})`;
-      convertDocBtn.textContent = batchQueue.length > 1 ? `Compress & Export All ${batchQueue.length} Frames` : `Compress & Export File`;
-      docStatus.textContent = 'Batch loaded. Set compression level & format below.';
+      selectedFileName.textContent = `Binder: ${loadedFiles.length} file(s) (${batchQueue.length} page frame${batchQueue.length > 1 ? 's' : ''})`;
+      convertDocBtn.textContent = formatSelect.value === 'application/pdf' ? `Merge & Export Master PDF (${batchQueue.length} Pages)` : `Export All ${batchQueue.length} Files`;
+      docStatus.textContent = 'Queue updated. Set format and compression level below.';
       updateCompressionUI();
       docInput.value = '';
+    }
+
+    docInput.addEventListener('change', (e) => {
+      handleIncomingFiles(Array.from(e.target.files));
+    });
+
+    formatSelect.addEventListener('change', () => {
+      convertDocBtn.textContent = formatSelect.value === 'application/pdf' ? `Merge & Export Master PDF (${batchQueue.length} Pages)` : `Export All ${batchQueue.length} Files`;
     });
 
     convertDocBtn.addEventListener('click', async () => {
       if (!batchQueue.length) return;
       convertDocBtn.disabled = true;
-      docStatus.textContent = 'Compressing and processing pages locally...';
+      docStatus.textContent = 'Processing and binding pages locally...';
       docPreviewContainer.style.display = 'none';
 
       const targetFormat = formatSelect.value;
@@ -1579,7 +1743,7 @@
         let pdfDocOut = null;
 
         for (let i = 0; i < batchQueue.length; i++) {
-          docStatus.textContent = `Compressing frame ${i + 1} of ${batchQueue.length}...`;
+          docStatus.textContent = `Compressing & binding page ${i + 1} of ${batchQueue.length}...`;
           const canvas = await renderDocItem(batchQueue[i], scale);
           const imgData = canvas.toDataURL('image/jpeg', quality);
           const orientation = canvas.width > canvas.height ? 'l' : 'p';
@@ -1599,10 +1763,10 @@
 
         docOutputImg.style.display = 'none';
         docDownloadLink.href = pdfUrl;
-        docDownloadLink.download = 'zippagif_compressed_document.pdf';
-        docDownloadLink.textContent = `Download Compressed PDF (${compressedMb} MB)`;
+        docDownloadLink.download = 'zippagif_master_combined.pdf';
+        docDownloadLink.textContent = `Download Master Combined PDF (${compressedMb} MB)`;
         docPreviewContainer.style.display = 'block';
-        docStatus.textContent = `Optimization complete! Output file: ~${compressedMb} MB.`;
+        docStatus.textContent = `Master document created! Combined ${batchQueue.length} pages into ~${compressedMb} MB.`;
       } else if (batchQueue.length === 1) {
         const canvas = await renderDocItem(batchQueue[0], scale);
         canvas.toBlob((blob) => {
@@ -1619,23 +1783,23 @@
       } else {
         const zip = new JSZip();
         for (let i = 0; i < batchQueue.length; i++) {
-          docStatus.textContent = `Encoding item ${i + 1} of ${batchQueue.length}...`;
+          docStatus.textContent = `Encoding file ${i + 1} of ${batchQueue.length}...`;
           const canvas = await renderDocItem(batchQueue[i], scale);
           const blob = await new Promise(r => canvas.toBlob(r, targetFormat, quality));
           zip.file(`${batchQueue[i].name}.${ext}`, blob);
         }
 
-        docStatus.textContent = `Zipping ${batchQueue.length} optimized files...`;
+        docStatus.textContent = `Zipping ${batchQueue.length} files...`;
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         const zipUrl = URL.createObjectURL(zipBlob);
         const compressedMb = (zipBlob.size / (1024 * 1024)).toFixed(2);
         
         docOutputImg.style.display = 'none';
         docDownloadLink.href = zipUrl;
-        docDownloadLink.download = `zippagif_batch_compressed_${ext}.zip`;
-        docDownloadLink.textContent = `Download Compressed Batch (${compressedMb} MB)`;
+        docDownloadLink.download = `zippagif_batch_bundle_${ext}.zip`;
+        docDownloadLink.textContent = `Download Bundle (${compressedMb} MB)`;
         docPreviewContainer.style.display = 'block';
-        docStatus.textContent = `Batch compressed: ${batchQueue.length} files bundled (~${compressedMb} MB).`;
+        docStatus.textContent = `Batch processed: ${batchQueue.length} files bundled (~${compressedMb} MB).`;
       }
 
       convertDocBtn.disabled = false;
