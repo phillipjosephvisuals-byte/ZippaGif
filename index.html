@@ -192,6 +192,7 @@
       top: 0; left: 0; width: 100%; height: 100%;
       opacity: 0;
       cursor: pointer;
+      z-index: 2;
     }
     .dropzone-label { font-weight: 600; font-size: 0.95rem; color: var(--slate-700); }
     .dropzone-sub { font-size: 0.8rem; color: var(--slate-500); margin-top: 4px; }
@@ -307,7 +308,11 @@
       transition: width 0.2s ease;
     }
 
-    .field { margin-bottom: 16px; }
+    .field { 
+      margin-bottom: 18px; 
+      position: relative;
+      z-index: 5;
+    }
     .field label {
       display: block;
       font-size: 0.85rem;
@@ -315,12 +320,70 @@
       color: var(--slate-700);
       margin-bottom: 6px;
     }
-    input[type="range"], select { 
-      width: 100%; 
-      box-sizing: border-box;
+    
+    /* Cross-browser range slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #cbd5e1;
+      outline: none;
       cursor: pointer;
+      margin: 12px 0 6px;
     }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--indigo-primary);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(67, 56, 202, 0.4);
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--indigo-primary);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(67, 56, 202, 0.4);
+    }
+
+    /* Compression Preset Button Group */
+    .preset-btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .preset-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid var(--slate-200);
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--slate-700);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .preset-btn.active {
+      background: var(--indigo-light);
+      border-color: var(--indigo-accent);
+      color: var(--indigo-primary);
+    }
+
     select {
+      width: 100%;
       background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--slate-200);
       padding: 10px;
@@ -681,17 +744,20 @@
         
         <div class="doc-guidance-pill">
           <span>ℹ️</span>
-          <span><strong>Format Notice:</strong> Best for shrinking oversized PDFs, contracts, and scans. Adjust the compression slider below before exporting.</span>
+          <span><strong>Format Notice:</strong> Best for shrinking oversized PDFs, contracts, and scans. Adjust compression target below before exporting.</span>
         </div>
 
-        <div class="dropzone">
+        <div class="dropzone" id="docDropzone">
           <input type="file" id="docInput" accept=".pdf, .docx, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*, .tiff, .tif" multiple>
           <div class="dropzone-label">Drop files here, or browse (Up to 50 files)</div>
           <div class="dropzone-sub">Supports Word (.docx), .pdf, batch .jpg, .png, .webp, and multi-page .tiff</div>
         </div>
 
         <div id="docPanel" style="display: none;">
-          <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700); margin-bottom:14px;">Selected: -</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div id="selectedFileName" style="font-size:0.85rem; font-weight:600; color:var(--slate-700);">Selected: -</div>
+            <button class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="resetDocUpload()">Change Files</button>
+          </div>
           
           <div class="field">
             <label for="formatSelect">Target Format</label>
@@ -703,17 +769,19 @@
             </select>
           </div>
 
-          <!-- COMPRESSION / QUALITY SLIDER -->
+          <!-- COMPRESSION / QUALITY SLIDER & BUTTONS -->
           <div class="field" style="margin-top: 18px;">
             <div class="slider-meta">
               <label for="compressionSlider">File Size & Compression Target</label>
               <span id="compressionLabel" style="color: var(--indigo-primary); font-weight: 700;">Balanced (~50% Reduction)</span>
             </div>
+            
             <input type="range" id="compressionSlider" min="1" max="3" step="1" value="2">
-            <div class="slider-meta" style="margin-top: 4px;">
-              <span style="font-size: 0.75rem; color: var(--slate-500);">Max Compression (Smallest MB)</span>
-              <span style="font-size: 0.75rem; color: var(--slate-500);">Balanced</span>
-              <span style="font-size: 0.75rem; color: var(--slate-500);">Max Fidelity (Crisp Text)</span>
+            
+            <div class="preset-btn-group">
+              <button type="button" class="preset-btn" id="btnPreset1" onclick="setCompressionLevel(1)">Max Compression<br><span style="font-size:0.7rem; font-weight:400;">Smallest File</span></button>
+              <button type="button" class="preset-btn active" id="btnPreset2" onclick="setCompressionLevel(2)">Balanced<br><span style="font-size:0.7rem; font-weight:400;">Email & Web</span></button>
+              <button type="button" class="preset-btn" id="btnPreset3" onclick="setCompressionLevel(3)">Max Fidelity<br><span style="font-size:0.7rem; font-weight:400;">Crisp Text</span></button>
             </div>
           </div>
 
@@ -1283,6 +1351,7 @@
     /* =========================================================
        SECTION 2: DOCUMENT & BATCH IMAGE COMPRESSION SUITE
        ========================================================= */
+    const docDropzone = document.getElementById('docDropzone');
     const docInput = document.getElementById('docInput');
     const docPanel = document.getElementById('docPanel');
     const selectedFileName = document.getElementById('selectedFileName');
@@ -1297,24 +1366,39 @@
 
     let batchQueue = [];
 
-    // Compression presets: [DPI Render Scale, Image Quality Factor, Label Description]
     const COMPRESSION_PRESETS = {
       1: { scale: 0.75, quality: 0.45, label: "Max Compression (~80% Reduction)" },
       2: { scale: 1.2, quality: 0.75, label: "Balanced (~50% Reduction)" },
       3: { scale: 1.8, quality: 0.95, label: "Max Fidelity (Crisp Text / Archival)" }
     };
 
-    function updateCompressionUI() {
-      const val = parseInt(compressionSlider.value, 10) || 2;
-      if (COMPRESSION_PRESETS[val]) {
-        compressionLabel.textContent = COMPRESSION_PRESETS[val].label;
-      }
+    function setCompressionLevel(level) {
+      compressionSlider.value = level;
+      updateCompressionUI();
     }
 
-    // Attach both input and change listeners for universal browser support
+    function updateCompressionUI() {
+      const val = parseInt(compressionSlider.value, 10) || 2;
+      compressionLabel.textContent = COMPRESSION_PRESETS[val].label;
+      
+      // Update active state on preset buttons
+      [1, 2, 3].forEach(i => {
+        const btn = document.getElementById(`btnPreset${i}`);
+        if (btn) btn.classList.toggle('active', i === val);
+      });
+    }
+
     compressionSlider.addEventListener('input', updateCompressionUI);
     compressionSlider.addEventListener('change', updateCompressionUI);
-    updateCompressionUI();
+
+    function resetDocUpload() {
+      batchQueue = [];
+      docPanel.style.display = 'none';
+      docDropzone.style.display = 'block';
+      docPreviewContainer.style.display = 'none';
+      docStatus.textContent = '';
+      docInput.value = '';
+    }
 
     docInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files).slice(0, MAX_DOC_BATCH);
@@ -1328,8 +1412,10 @@
 
       batchQueue = [];
       docStatus.textContent = `Queuing ${files.length} file(s)...`;
+      docDropzone.style.display = 'none';
       docPanel.style.display = 'block';
       docPreviewContainer.style.display = 'none';
+      updateCompressionUI();
 
       for (let f = 0; f < files.length; f++) {
         const file = files[f];
@@ -1407,9 +1493,9 @@
         }
       }
 
-      selectedFileName.textContent = `Batch Ready: ${files.length} file(s) loaded (${batchQueue.length} total page frames).`;
+      selectedFileName.textContent = `Batch: ${files.length} file(s) (${batchQueue.length} page frame${batchQueue.length > 1 ? 's' : ''})`;
       convertDocBtn.textContent = batchQueue.length > 1 ? `Compress & Export All ${batchQueue.length} Frames` : `Compress & Export File`;
-      docStatus.textContent = 'Batch loaded. Adjust target format & compression slider.';
+      docStatus.textContent = 'Batch loaded. Set compression level & format below.';
       docInput.value = '';
     });
 
@@ -1452,7 +1538,7 @@
         docDownloadLink.download = 'zippagif_compressed_document.pdf';
         docDownloadLink.textContent = `Download Compressed PDF (${compressedMb} MB)`;
         docPreviewContainer.style.display = 'block';
-        docStatus.textContent = `Optimization complete! File size: ~${compressedMb} MB.`;
+        docStatus.textContent = `Optimization complete! Output file: ~${compressedMb} MB.`;
       } else if (batchQueue.length === 1) {
         const canvas = await renderDocItem(batchQueue[0], scale);
         canvas.toBlob((blob) => {
