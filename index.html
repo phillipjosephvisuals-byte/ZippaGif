@@ -315,7 +315,11 @@
       color: var(--slate-700);
       margin-bottom: 6px;
     }
-    input[type="range"], select { width: 100%; box-sizing: border-box; }
+    input[type="range"], select { 
+      width: 100%; 
+      box-sizing: border-box;
+      cursor: pointer;
+    }
     select {
       background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--slate-200);
@@ -677,7 +681,7 @@
         
         <div class="doc-guidance-pill">
           <span>ℹ️</span>
-          <span><strong>Format Notice:</strong> Best for shrinking oversized PDFs, contracts, and scans. Adjust the target file size slider below before conversion.</span>
+          <span><strong>Format Notice:</strong> Best for shrinking oversized PDFs, contracts, and scans. Adjust the compression slider below before exporting.</span>
         </div>
 
         <div class="dropzone">
@@ -703,7 +707,7 @@
           <div class="field" style="margin-top: 18px;">
             <div class="slider-meta">
               <label for="compressionSlider">File Size & Compression Target</label>
-              <span id="compressionLabel" style="color: var(--indigo-primary);">Balanced (~50% Reduction)</span>
+              <span id="compressionLabel" style="color: var(--indigo-primary); font-weight: 700;">Balanced (~50% Reduction)</span>
             </div>
             <input type="range" id="compressionSlider" min="1" max="3" step="1" value="2">
             <div class="slider-meta" style="margin-top: 4px;">
@@ -1300,10 +1304,17 @@
       3: { scale: 1.8, quality: 0.95, label: "Max Fidelity (Crisp Text / Archival)" }
     };
 
-    compressionSlider.addEventListener('input', () => {
-      const val = parseInt(compressionSlider.value, 10);
-      compressionLabel.textContent = COMPRESSION_PRESETS[val].label;
-    });
+    function updateCompressionUI() {
+      const val = parseInt(compressionSlider.value, 10) || 2;
+      if (COMPRESSION_PRESETS[val]) {
+        compressionLabel.textContent = COMPRESSION_PRESETS[val].label;
+      }
+    }
+
+    // Attach both input and change listeners for universal browser support
+    compressionSlider.addEventListener('input', updateCompressionUI);
+    compressionSlider.addEventListener('change', updateCompressionUI);
+    updateCompressionUI();
 
     docInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files).slice(0, MAX_DOC_BATCH);
@@ -1410,7 +1421,7 @@
 
       const targetFormat = formatSelect.value;
       const ext = targetFormat === 'application/pdf' ? 'pdf' : targetFormat.split('/')[1];
-      const presetLevel = parseInt(compressionSlider.value, 10);
+      const presetLevel = parseInt(compressionSlider.value, 10) || 2;
       const { scale, quality } = COMPRESSION_PRESETS[presetLevel];
 
       if (targetFormat === 'application/pdf') {
@@ -1434,7 +1445,6 @@
 
         const pdfBlob = pdfDocOut.output('blob');
         const pdfUrl = URL.createObjectURL(pdfBlob);
-        const originalEstimatedMb = (batchQueue.length * 1.8).toFixed(1);
         const compressedMb = (pdfBlob.size / (1024 * 1024)).toFixed(2);
 
         docOutputImg.style.display = 'none';
@@ -1490,7 +1500,6 @@
         canvas.height = viewport.height;
         await item.data.render({ canvasContext: ctx, viewport }).promise;
       } else {
-        // Downscale raster canvas if customScale is under 1.0
         const w = customScale < 1 ? item.data.width * customScale : item.data.width;
         const h = customScale < 1 ? item.data.height * customScale : item.data.height;
         canvas.width = w;
