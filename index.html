@@ -357,19 +357,19 @@
       box-shadow: 0 2px 6px rgba(67, 56, 202, 0.4);
     }
 
-    /* Compression Preset Button Group */
+    /* Compression 5-Level Button Group */
     .preset-btn-group {
-      display: flex;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
       margin-top: 8px;
     }
     .preset-btn {
-      flex: 1;
-      padding: 8px 10px;
+      padding: 6px 4px;
       border: 1px solid var(--slate-200);
       background: rgba(255, 255, 255, 0.8);
       color: var(--slate-700);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
@@ -380,6 +380,26 @@
       background: var(--indigo-light);
       border-color: var(--indigo-accent);
       color: var(--indigo-primary);
+    }
+
+    /* Live File Size Indicator Box */
+    .size-estimate-box {
+      background: rgba(241, 245, 249, 0.8);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 0.82rem;
+    }
+    .size-badge {
+      font-weight: 700;
+      color: #16a34a;
+      background: #dcfce7;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
 
     select {
@@ -739,7 +759,7 @@
         </div>
       </div>
 
-      <!-- VIEW 2: DOCUMENT & BATCH IMAGE SUITE (WITH COMPRESSION SLIDER) -->
+      <!-- VIEW 2: DOCUMENT & BATCH IMAGE SUITE (WITH 5-LEVEL COMPRESSION SLIDER) -->
       <div id="viewDoc" style="display: none;">
         
         <div class="doc-guidance-pill">
@@ -769,19 +789,27 @@
             </select>
           </div>
 
-          <!-- COMPRESSION / QUALITY SLIDER & BUTTONS -->
+          <!-- COMPRESSION / QUALITY 5-LEVEL SLIDER -->
           <div class="field" style="margin-top: 18px;">
             <div class="slider-meta">
-              <label for="compressionSlider">File Size & Compression Target</label>
-              <span id="compressionLabel" style="color: var(--indigo-primary); font-weight: 700;">Balanced (~50% Reduction)</span>
+              <label for="compressionSlider">Compression & File Size Target</label>
+              <span id="compressionLabel" style="color: var(--indigo-primary); font-weight: 700;">Balanced (Medium Compression)</span>
             </div>
             
-            <input type="range" id="compressionSlider" min="1" max="3" step="1" value="2">
+            <input type="range" id="compressionSlider" min="1" max="5" step="1" value="3">
             
             <div class="preset-btn-group">
-              <button type="button" class="preset-btn" id="btnPreset1" onclick="setCompressionLevel(1)">Max Compression<br><span style="font-size:0.7rem; font-weight:400;">Smallest File</span></button>
-              <button type="button" class="preset-btn active" id="btnPreset2" onclick="setCompressionLevel(2)">Balanced<br><span style="font-size:0.7rem; font-weight:400;">Email & Web</span></button>
-              <button type="button" class="preset-btn" id="btnPreset3" onclick="setCompressionLevel(3)">Max Fidelity<br><span style="font-size:0.7rem; font-weight:400;">Crisp Text</span></button>
+              <button type="button" class="preset-btn" id="btnPreset1" onclick="setCompressionLevel(1)">1. Extreme</button>
+              <button type="button" class="preset-btn" id="btnPreset2" onclick="setCompressionLevel(2)">2. Strong</button>
+              <button type="button" class="preset-btn active" id="btnPreset3" onclick="setCompressionLevel(3)">3. Balanced</button>
+              <button type="button" class="preset-btn" id="btnPreset4" onclick="setCompressionLevel(4)">4. Light</button>
+              <button type="button" class="preset-btn" id="btnPreset5" onclick="setCompressionLevel(5)">5. Maximum</button>
+            </div>
+
+            <!-- Real-Time Size Indicator -->
+            <div class="size-estimate-box">
+              <span>Original Size: <strong id="origSizeText">0.0 MB</strong></span>
+              <span>Est. Output: <strong id="estSizeText" class="size-badge">~0.0 MB</strong></span>
             </div>
           </div>
 
@@ -818,7 +846,7 @@
             <li><strong>100-Frame Budget</strong> (10s @ 10 FPS or 20s @ 5 FPS)</li>
             <li>5 to 15 FPS selectable frame rates</li>
             <li><strong>480p Max Resolution</strong> on longest side</li>
-            <li>PDF & Image <strong>Compression Engine</strong></li>
+            <li><strong>5-Level Compression Engine</strong> with live MB estimates</li>
             <li>Word (.docx) to PDF with Dual Engines</li>
             <li>Up to 50 Files Document Queue</li>
           </ul>
@@ -1358,6 +1386,8 @@
     const formatSelect = document.getElementById('formatSelect');
     const compressionSlider = document.getElementById('compressionSlider');
     const compressionLabel = document.getElementById('compressionLabel');
+    const origSizeText = document.getElementById('origSizeText');
+    const estSizeText = document.getElementById('estSizeText');
     const convertDocBtn = document.getElementById('convertDocBtn');
     const docStatus = document.getElementById('docStatus');
     const docPreviewContainer = document.getElementById('docPreviewContainer');
@@ -1365,11 +1395,15 @@
     const docDownloadLink = document.getElementById('docDownloadLink');
 
     let batchQueue = [];
+    let totalInputBytes = 0;
 
+    // 5-Level Compression Presets
     const COMPRESSION_PRESETS = {
-      1: { scale: 0.75, quality: 0.45, label: "Max Compression (~80% Reduction)" },
-      2: { scale: 1.2, quality: 0.75, label: "Balanced (~50% Reduction)" },
-      3: { scale: 1.8, quality: 0.95, label: "Max Fidelity (Crisp Text / Archival)" }
+      1: { scale: 0.60, quality: 0.30, ratio: 0.15, label: "1. Extreme (~85% Reduction / Smallest File)" },
+      2: { scale: 0.85, quality: 0.50, ratio: 0.30, label: "2. Strong (~70% Reduction / Good for Email)" },
+      3: { scale: 1.15, quality: 0.70, ratio: 0.50, label: "3. Balanced (~50% Reduction / Recommended)" },
+      4: { scale: 1.50, quality: 0.85, ratio: 0.75, label: "4. Light (~25% Reduction / High Quality)" },
+      5: { scale: 2.00, quality: 0.98, ratio: 0.95, label: "5. Maximum Fidelity (Uncompressed / Archival)" }
     };
 
     function setCompressionLevel(level) {
@@ -1378,14 +1412,32 @@
     }
 
     function updateCompressionUI() {
-      const val = parseInt(compressionSlider.value, 10) || 2;
-      compressionLabel.textContent = COMPRESSION_PRESETS[val].label;
+      const val = parseInt(compressionSlider.value, 10) || 3;
+      const preset = COMPRESSION_PRESETS[val];
+      compressionLabel.textContent = preset.label;
       
-      // Update active state on preset buttons
-      [1, 2, 3].forEach(i => {
+      // Update preset buttons
+      [1, 2, 3, 4, 5].forEach(i => {
         const btn = document.getElementById(`btnPreset${i}`);
         if (btn) btn.classList.toggle('active', i === val);
       });
+
+      // Update real-time size indicators
+      if (totalInputBytes > 0) {
+        const origMb = (totalInputBytes / (1024 * 1024)).toFixed(2);
+        origSizeText.textContent = `${origMb} MB`;
+
+        let estBytes = totalInputBytes * preset.ratio;
+        // Fallback floor based on page frame count
+        const minBytes = batchQueue.length * (val === 1 ? 40000 : val === 2 ? 80000 : val === 3 ? 150000 : val === 4 ? 300000 : 600000);
+        estBytes = Math.max(estBytes, minBytes);
+        
+        const estMb = (estBytes / (1024 * 1024)).toFixed(2);
+        estSizeText.textContent = `~${estMb} MB`;
+      } else {
+        origSizeText.textContent = '0.0 MB';
+        estSizeText.textContent = '~0.0 MB';
+      }
     }
 
     compressionSlider.addEventListener('input', updateCompressionUI);
@@ -1393,6 +1445,7 @@
 
     function resetDocUpload() {
       batchQueue = [];
+      totalInputBytes = 0;
       docPanel.style.display = 'none';
       docDropzone.style.display = 'block';
       docPreviewContainer.style.display = 'none';
@@ -1411,6 +1464,9 @@
       }
 
       batchQueue = [];
+      totalInputBytes = 0;
+      files.forEach(f => totalInputBytes += f.size);
+
       docStatus.textContent = `Queuing ${files.length} file(s)...`;
       docDropzone.style.display = 'none';
       docPanel.style.display = 'block';
@@ -1496,6 +1552,7 @@
       selectedFileName.textContent = `Batch: ${files.length} file(s) (${batchQueue.length} page frame${batchQueue.length > 1 ? 's' : ''})`;
       convertDocBtn.textContent = batchQueue.length > 1 ? `Compress & Export All ${batchQueue.length} Frames` : `Compress & Export File`;
       docStatus.textContent = 'Batch loaded. Set compression level & format below.';
+      updateCompressionUI();
       docInput.value = '';
     });
 
@@ -1507,7 +1564,7 @@
 
       const targetFormat = formatSelect.value;
       const ext = targetFormat === 'application/pdf' ? 'pdf' : targetFormat.split('/')[1];
-      const presetLevel = parseInt(compressionSlider.value, 10) || 2;
+      const presetLevel = parseInt(compressionSlider.value, 10) || 3;
       const { scale, quality } = COMPRESSION_PRESETS[presetLevel];
 
       if (targetFormat === 'application/pdf') {
@@ -1577,7 +1634,7 @@
       convertDocBtn.disabled = false;
     });
 
-    async function renderDocItem(item, customScale = 1.2) {
+    async function renderDocItem(item, customScale = 1.15) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (item.type === 'pdf-page') {
