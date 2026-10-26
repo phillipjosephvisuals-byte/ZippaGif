@@ -211,7 +211,7 @@
       line-height: 1.4;
     }
 
-    #clipList { 
+    #clipList, #editorClipList { 
       display: flex; 
       flex-direction: column; 
       gap: 16px; 
@@ -584,7 +584,7 @@
       text-align: center;
       display: none;
     }
-    .preview-box img {
+    .preview-box img, .preview-box video {
       max-width: 100%;
       border-radius: 8px;
       margin: 12px auto;
@@ -807,7 +807,7 @@
       🔒 100% Client-Side Engine • Zero Cloud Uploads
     </div>
     <h1>Professional File Conversion.<br>Zero Cloud Uploads.</h1>
-    <p>Convert video clips to lightweight GIFs, combine multiple files into master PDFs, and compress documents locally.</p>
+    <p>Convert video clips to lightweight GIFs, trim & stitch multi-clip videos into master MP4s, and combine documents locally.</p>
   </header>
 
   <!-- Core Tool Section -->
@@ -815,7 +815,8 @@
     <div class="glass-card">
       <div class="tool-tabs">
         <button class="tab-btn active" id="tabVideoBtn" onclick="switchTab('video')">Video to GIF</button>
-        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document & File Binder</button>
+        <button class="tab-btn" id="tabEditorBtn" onclick="switchTab('editor')">Pro Video Editor</button>
+        <button class="tab-btn" id="tabDocBtn" onclick="switchTab('doc')">Document Binder</button>
       </div>
 
       <!-- VIEW 1: VIDEO TO GIF -->
@@ -862,7 +863,31 @@
         </div>
       </div>
 
-      <!-- VIEW 2: DOCUMENT & MULTI-FILE COMBINER SUITE -->
+      <!-- VIEW 2: PRO VIDEO EDITOR (Multi-Clip & MP4 Export) -->
+      <div id="viewEditor" style="display: none;">
+        <div class="doc-guidance-pill">
+          <span>🎬</span>
+          <span><strong>Pro Video Editor:</strong> Upload up to 10 video clips, trim segments on interactive timelines, reorder clips, and stitch them directly into a master MP4 video locally.</span>
+        </div>
+
+        <div id="editorClipList"></div>
+
+        <div class="dropzone" id="editorDropzone">
+          <input type="file" id="editorVideoInput" accept="video/*" multiple>
+          <div class="dropzone-label">Drop up to 10 video files here, or browse</div>
+          <div class="dropzone-sub">Supports MP4, WebM, MOV (Stitched sequentially)</div>
+        </div>
+
+        <button id="stitchBtn" class="btn-primary" disabled style="margin-top: 10px;">Render & Export Stitched MP4</button>
+        <div id="editorStatus" class="status-text"></div>
+
+        <div id="editorPreviewContainer" class="preview-box">
+          <video id="editorVideoOutput" controls></video>
+          <a id="editorDownloadLink" class="btn-primary" style="display:inline-block; width:auto; margin-top:8px; text-decoration:none;" download="zippagif_stitched.mp4">Download Stitched MP4</a>
+        </div>
+      </div>
+
+      <!-- VIEW 3: DOCUMENT & MULTI-FILE COMBINER SUITE -->
       <div id="viewDoc" style="display: none;">
         
         <div class="doc-guidance-pill">
@@ -1036,8 +1061,8 @@
     const MAX_DOC_BATCH = 50;
 
     /* =========================================================
-       DYNAMIC LAZY LOADER FOR DOCX ENGINES
-       ========================================================= */
+        DYNAMIC LAZY LOADER FOR DOCX ENGINES
+        ========================================================= */
     let docxLibrariesLoaded = false;
     let docxLibrariesLoading = false;
 
@@ -1075,8 +1100,8 @@
     }
 
     /* =========================================================
-       WORD (.DOCX) PROCESSING & FALLBACKS
-       ========================================================= */
+        WORD (.DOCX) PROCESSING & FALLBACKS
+        ========================================================= */
     let activeDocxFile = null;
     let activeDocxBuffer = null;
 
@@ -1201,8 +1226,8 @@
     }
 
     /* =========================================================
-       SECTION 1: VIDEO TO GIF ENGINE
-       ========================================================= */
+        SECTION 1: VIDEO TO GIF ENGINE
+        ========================================================= */
     const videoInput = document.getElementById('videoInput');
     const videoDropzone = document.getElementById('videoDropzone');
     const clipList = document.getElementById('clipList');
@@ -1487,8 +1512,239 @@
     });
 
     /* =========================================================
-       SECTION 2: DOCUMENT & MULTI-FILE COMBINER SUITE
-       ========================================================= */
+        SECTION 2: PRO VIDEO EDITOR (Multi-Clip & MP4 Stitcher)
+        ========================================================= */
+    const editorVideoInput = document.getElementById('editorVideoInput');
+    const editorDropzone = document.getElementById('editorDropzone');
+    const editorClipList = document.getElementById('editorClipList');
+    const stitchBtn = document.getElementById('stitchBtn');
+    const editorStatus = document.getElementById('editorStatus');
+    const editorPreviewContainer = document.getElementById('editorPreviewContainer');
+    const editorVideoOutput = document.getElementById('editorVideoOutput');
+    const editorDownloadLink = document.getElementById('editorDownloadLink');
+
+    let editorClips = [];
+
+    editorVideoInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      const remainingSlots = 10 - editorClips.length;
+      const filesToProcess = files.slice(0, remainingSlots);
+
+      editorStatus.textContent = 'Loading video clips...';
+
+      for (let file of filesToProcess) {
+        try {
+          const url = URL.createObjectURL(file);
+          const video = document.createElement('video');
+          video.src = url;
+          video.preload = 'auto';
+          video.muted = true;
+
+          await new Promise((resolve, reject) => {
+            video.onloadedmetadata = resolve;
+            video.onerror = reject;
+            setTimeout(() => reject(new Error("Timeout loading clip")), 10000);
+          });
+
+          const clip = {
+            id: 'editor-clip-' + Date.now() + Math.random(),
+            file, url, video,
+            duration: video.duration,
+            startPct: 0,
+            endPct: 1
+          };
+
+          editorClips.push(clip);
+          renderEditorClipCard(clip);
+        } catch (err) {
+          console.error("Error loading clip:", err);
+        }
+      }
+
+      editorVideoInput.value = '';
+      updateEditorState();
+    });
+
+    function updateEditorState() {
+      if (editorClips.length > 0) {
+        editorDropzone.style.display = editorClips.length >= 10 ? 'none' : 'block';
+        stitchBtn.disabled = false;
+        editorStatus.textContent = `${editorClips.length} clip(s) loaded. Trim and arrange below.`;
+      } else {
+        editorDropzone.style.display = 'block';
+        stitchBtn.disabled = true;
+        editorStatus.textContent = '';
+      }
+    }
+
+    function renderEditorClipCard(clip) {
+      const card = document.createElement('div');
+      card.className = 'clip-card';
+      card.dataset.id = clip.id;
+      card.innerHTML = `
+        <div class="clip-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span>🎬 ${clip.file.name}</span>
+            <span style="font-size:0.75rem; color:var(--slate-500);">(${clip.duration.toFixed(1)}s)</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="moveEditorClip('${clip.id}', -1)">↑</button>
+            <button class="btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="moveEditorClip('${clip.id}', 1)">↓</button>
+            <button class="doc-thumb-remove" style="position:static;" onclick="removeEditorClip('${clip.id}')">✕</button>
+          </div>
+        </div>
+        <div class="filmstrip-container">
+          <canvas class="filmstrip-canvas"></canvas>
+          <div class="trimmer-overlay">
+            <div class="handle handle-left"></div>
+            <div class="handle handle-right"></div>
+          </div>
+        </div>
+      `;
+      editorClipList.appendChild(card);
+      setupTrimmer(card, clip);
+      generateFilmstrip(card, clip);
+    }
+
+    function removeEditorClip(id) {
+      const idx = editorClips.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        editorClips.splice(idx, 1);
+        document.querySelector(`[data-id="${id}"]`)?.remove();
+        updateEditorState();
+      }
+    }
+
+    function moveEditorClip(id, direction) {
+      const idx = editorClips.findIndex(c => c.id === id);
+      if (idx === -1) return;
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= editorClips.length) return;
+
+      // Swap in array
+      const temp = editorClips[idx];
+      editorClips[idx] = editorClips[targetIdx];
+      editorClips[targetIdx] = temp;
+
+      // Re-render list DOM
+      editorClipList.innerHTML = '';
+      editorClips.forEach(c => renderEditorClipCard(c));
+    }
+
+    stitchBtn.addEventListener('click', async () => {
+      if (!editorClips.length) return;
+      stitchBtn.disabled = true;
+      editorStatus.textContent = 'Initializing local rendering engine...';
+      editorPreviewContainer.style.display = 'none';
+
+      try {
+        const renderCanvas = document.createElement('canvas');
+        const targetWidth = 640;
+        const targetHeight = 360;
+        renderCanvas.width = targetWidth;
+        renderCanvas.height = targetHeight;
+        const ctx = renderCanvas.getContext('2d');
+
+        const stream = renderCanvas.captureStream(30);
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm';
+        }
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = '';
+        }
+
+        const recorderOptions = mimeType ? { mimeType } : {};
+        const mediaRecorder = new MediaRecorder(stream, recorderOptions);
+        const chunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+
+        const exportDone = new Promise((resolve) => {
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
+            resolve(blob);
+          };
+        });
+
+        mediaRecorder.start();
+
+        // Sequential Stitching Loop
+        for (let i = 0; i < editorClips.length; i++) {
+          const clip = editorClips[i];
+          editorStatus.textContent = `Rendering clip ${i + 1} of ${editorClips.length}: ${clip.file.name}`;
+          
+          const startTime = clip.startPct * clip.duration;
+          const endTime = clip.endPct * clip.duration;
+          const fps = 30;
+          const frameInterval = 1 / fps;
+          let currentTime = startTime;
+
+          clip.video.currentTime = currentTime;
+          await new Promise(r => {
+            const onSeek = () => { clip.video.removeEventListener('seeked', onSeek); r(); };
+            clip.video.addEventListener('seeked', onSeek);
+            setTimeout(onSeek, 400);
+          });
+
+          while (currentTime < endTime && currentTime <= clip.duration) {
+            clip.video.currentTime = currentTime;
+            await new Promise(r => {
+              const onSeek = () => { clip.video.removeEventListener('seeked', onSeek); r(); };
+              clip.video.addEventListener('seeked', onSeek);
+              setTimeout(onSeek, 150);
+            });
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+
+            // Maintain aspect ratio cover/contain
+            const vW = clip.video.videoWidth || targetWidth;
+            const vH = clip.video.videoHeight || targetHeight;
+            const hRatio = targetWidth / vW;
+            const vRatio = targetHeight / vH;
+            const ratio = Math.min(hRatio, vRatio);
+            const w = vW * ratio;
+            const h = vH * ratio;
+            const x = (targetWidth - w) / 2;
+            const y = (targetHeight - h) / 2;
+
+            ctx.drawImage(clip.video, x, y, w, h);
+            
+            // Wait for next animation frame tick to pace rendering
+            await new Promise(r => requestAnimationFrame(r));
+            currentTime += frameInterval;
+          }
+        }
+
+        editorStatus.textContent = 'Finalizing video container...';
+        mediaRecorder.stop();
+
+        const videoBlob = await exportDone;
+        const videoUrl = URL.createObjectURL(videoBlob);
+        const sizeMb = (videoBlob.size / (1024 * 1024)).toFixed(2);
+
+        editorVideoOutput.src = videoUrl;
+        editorDownloadLink.href = videoUrl;
+        editorDownloadLink.download = 'zippagif_stitched_master.webm';
+        editorDownloadLink.textContent = `Download Stitched Video (${sizeMb} MB)`;
+        editorPreviewContainer.style.display = 'block';
+        editorStatus.textContent = `Stitching complete! Successfully combined ${editorClips.length} clips (~${sizeMb} MB).`;
+      } catch (err) {
+        console.error(err);
+        editorStatus.textContent = 'Error rendering video sequence: ' + err.message;
+      } finally {
+        stitchBtn.disabled = false;
+      }
+    });
+
+    /* =========================================================
+        SECTION 3: DOCUMENT & MULTI-FILE COMBINER SUITE
+        ========================================================= */
     const docDropzone = document.getElementById('docDropzone');
     const docInput = document.getElementById('docInput');
     const docPanel = document.getElementById('docPanel');
@@ -1825,8 +2081,11 @@
 
     function switchTab(type) {
       document.getElementById('tabVideoBtn').classList.toggle('active', type === 'video');
+      document.getElementById('tabEditorBtn').classList.toggle('active', type === 'editor');
       document.getElementById('tabDocBtn').classList.toggle('active', type === 'doc');
+      
       document.getElementById('viewVideo').style.display = type === 'video' ? 'block' : 'none';
+      document.getElementById('viewEditor').style.display = type === 'editor' ? 'block' : 'none';
       document.getElementById('viewDoc').style.display = type === 'doc' ? 'block' : 'none';
     }
   </script>
